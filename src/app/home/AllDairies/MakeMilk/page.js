@@ -412,7 +412,7 @@ const OwnerMilk = () => {
                     <input
                       type="date"
                       id="currentDate"
-                      className="p-2 rounded-md shadow-md bg-gray-500 text-white"
+                      className="p-2 rounded-md shadow-md bg-gray-500 text-black"
                       value={currentDate}
                       onChange={(e) => setCurrentDate(e.target.value)}
                       max={new Date().toISOString().split("T")[0]}
@@ -425,7 +425,7 @@ const OwnerMilk = () => {
                     </label>
                     <select
                       id="currentTime"
-                      className="p-2 rounded-md shadow-md bg-gray-500 text-white"
+                      className="p-2 rounded-md shadow-md bg-gray-500 text-black"
                       value={currentTime}
                       onChange={(e) => setCurrentTime(e.target.value)}
                       required
@@ -435,13 +435,13 @@ const OwnerMilk = () => {
                     </select>
                   </div>
                   {/* <div className="flex items-center">
-              <label htmlFor="sampleNo" className="text-white text-lg ml-4">
+              <label htmlFor="sampleNo" className="text-black text-lg ml-4">
                 Sample No:
               </label>
               <input
                 type="text"
                 id="sampleNo"
-                className="w-20 ml-2 p-2 rounded-md shadow-md bg-gray-500 text-white"
+                className="w-20 ml-2 p-2 rounded-md shadow-md bg-gray-500 text-black"
                 value={sampleNo}
                 onChange={(e) => setSampleNo(e.target.value)}
               />
@@ -459,7 +459,7 @@ const OwnerMilk = () => {
                     <input
                       type="text"
                       id="code"
-                      className="w-24 p-2 rounded-md shadow-md bg-gray-500 text-white"
+                      className="w-24 p-2 rounded-md shadow-md bg-gray-500 text-black"
                       value={registerNo}
                       onChange={handleRegisterNoChange}
                       required
@@ -468,7 +468,7 @@ const OwnerMilk = () => {
                   <div className="flex items-center">
                     <select
                       id="ownerDropdown"
-                      className="w-48 p-2 rounded-md shadow-md bg-gray-500 text-white"
+                      className="w-48 p-2 rounded-md shadow-md bg-gray-500 text-black"
                       value={selectedDairyName}
                       onChange={(e) => setSelectedDairyName(e.target.value)}
                       required
@@ -485,7 +485,7 @@ const OwnerMilk = () => {
                     <select
                       id="milkTypeDropdown"
                       name="milkType"
-                      className="w-32 p-2 rounded-md shadow-md bg-gray-500 text-white"
+                      className="w-32 p-2 rounded-md shadow-md bg-gray-500 text-black"
                       value={milkDetails.milkType || ""}
                       onChange={handleInputChange}
                       required
@@ -499,7 +499,7 @@ const OwnerMilk = () => {
                     <select
                       id="qualityPercentage"
                       name="quality"
-                      className="w-24 p-2 rounded-md shadow-md bg-gray-500 text-white"
+                      className="w-24 p-2 rounded-md shadow-md bg-gray-500 text-black"
                       value={milkDetails.quality || ""}
                       onChange={handleInputChange}
                       required
@@ -524,7 +524,7 @@ const OwnerMilk = () => {
                       id="milkKG"
                       name="milkKG"
                       step="0.1"
-                      className="p-2 rounded-md shadow-md bg-gray-500 text-white"
+                      className="p-2 rounded-md shadow-md bg-gray-500 text-black"
                       value={milkDetails.milkKG || ""}
                       onChange={handleInputChange}
                       required
@@ -539,7 +539,7 @@ const OwnerMilk = () => {
                       id="milkLiter"
                       name="milkLiter"
                       step="0.1"
-                      className="p-2 rounded-md shadow-md bg-gray-500 text-white"
+                      className="p-2 rounded-md shadow-md bg-gray-500 text-black"
                       value={milkDetails.milkLiter || ""}
                       onChange={handleInputChange}
                       required
@@ -554,7 +554,7 @@ const OwnerMilk = () => {
                       id="smelLiter"
                       name="smelLiter"
                       step="0.1"
-                      className="p-2 rounded-md shadow-md bg-gray-500 text-white"
+                      className="p-2 rounded-md shadow-md bg-gray-500 text-black"
                       value={milkDetails.smelLiter || ""}
                       onChange={handleInputChange}
                       required
@@ -569,7 +569,7 @@ const OwnerMilk = () => {
                       id="fat"
                       name="fat"
                       step="0.1"
-                      className="p-2 rounded-md shadow-md bg-gray-500 text-white"
+                      className="p-2 rounded-md shadow-md bg-gray-500 text-black"
                       value={milkDetails.fat || ""}
                       onChange={handleInputChange}
                       required
@@ -584,14 +584,14 @@ const OwnerMilk = () => {
                       id="snf"
                       name="snf"
                       step="0.1"
-                      className="p-2 rounded-md shadow-md bg-gray-500 text-white"
+                      className="p-2 rounded-md shadow-md bg-gray-500 text-black"
                       value={milkDetails.snf || ""}
                       onChange={handleInputChange}
                       required
                     />
                   </div>
                   <div className="flex flex-col">
-                    <label htmlFor="rate" className="text-white text-lg mb-1">
+                    <label htmlFor="rate" className="text-whitetext-lg mb-1">
                       Rate:
                     </label>
                     <input
@@ -599,7 +599,7 @@ const OwnerMilk = () => {
                       id="rate"
                       name="rate"
                       step="0.1"
-                      className="p-2 rounded-md shadow-md bg-gray-500 text-white"
+                      className="p-2 rounded-md shadow-md bg-gray-500 text-black"
                       value={milkDetails.rate || ""}
                       onChange={handleInputChange}
                       readOnly
@@ -614,7 +614,7 @@ const OwnerMilk = () => {
                       id="amount"
                       name="amount"
                       step="0.1"
-                      className="p-2 rounded-md shadow-md bg-gray-500 text-white"
+                      className="p-2 rounded-md shadow-md bg-gray-500 text-black"
                       value={milkDetails.amount || ""}
                       onChange={handleInputChange}
                       readOnly
@@ -694,7 +694,7 @@ const OwnerMilk = () => {
                     type="number"
                     id="acceptedCen"
                     name="acceptedCen"
-                    className="p-2 rounded-md shadow-md bg-gray-500 text-white"
+                    className="p-2 rounded-md shadow-md bg-gray-500 text-black"
                     value={milkDetails.acceptedCen || ""}
                     onChange={handleInputChange}
                     required
@@ -708,7 +708,7 @@ const OwnerMilk = () => {
                     type="number"
                     id="smeledCen"
                     name="smeledCen"
-                    className="p-2 rounded-md shadow-md bg-gray-500 text-white"
+                    className="p-2 rounded-md shadow-md bg-gray-500 text-black"
                     value={milkDetails.smeledCen || ""}
                     onChange={handleInputChange}
                     required
@@ -721,7 +721,7 @@ const OwnerMilk = () => {
                   <select
                     id="bhesalType"
                     name="bhesalType"
-                    className="p-2 rounded-md shadow-md bg-gray-500 text-white"
+                    className="p-2 rounded-md shadow-md bg-gray-500 text-black"
                     value={milkDetails.bhesalType || ""}
                     onChange={handleInputChange}
                     required
@@ -740,7 +740,7 @@ const OwnerMilk = () => {
                     type="text"
                     id="precotion"
                     name="precotion"
-                    className="p-2 rounded-md shadow-md bg-gray-500 text-white"
+                    className="p-2 rounded-md shadow-md bg-gray-500 text-black"
                     value={milkDetails.precotion || ""}
                     onChange={handleInputChange}
                     required

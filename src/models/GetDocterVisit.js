@@ -45,6 +45,12 @@ const GetDocterVisitSchema = new mongoose.Schema({
     visitTime: {
         type: String,
     },
+    visitType: {
+        type: String,
+    },
+    visitRate: {
+        type: Number
+    },
     // New fields for completed visits
     diseasesOccurred: {
         type: String,

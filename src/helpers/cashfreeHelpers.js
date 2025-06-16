@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { getCashfreeToken } from '../app/lib/cashfreeToken';
-import Sanscript from '@sanskrit-coders/sanscript';
+import Sanscript from 'sanscript';
 
 export const addBeneficiaryToCashfree = async (owner) => {
   try {
@@ -11,7 +11,7 @@ export const addBeneficiaryToCashfree = async (owner) => {
       ? 'https://payout-api.cashfree.com'
       : 'https://payout-gamma.cashfree.com';
 
-    // Transliterate name from Devanagari to ITRANS (English script)
+    // Transliterate name from Devanagari to ITRANS
     let name = Sanscript.t(owner.ownerName || '', 'devanagari', 'itrans').trim();
 
     // Capitalize each word
@@ -25,21 +25,19 @@ export const addBeneficiaryToCashfree = async (owner) => {
     if (!name || name.length < 3 || /[^a-zA-Z\s]/.test(name)) {
       throw new Error(`Invalid name provided: "${owner.ownerName}"`);
     }
-    
 
     const payload = {
-      beneId: `owner${owner.registerNo}`, // Unique beneficiary ID
+      beneId: `owner${owner.registerNo}`,
       name: name,
       email: owner.email || "noemail@example.com",
       phone: owner.phone,
       bankAccount: owner.bankDetails.accountNumber,
       ifsc: owner.bankDetails.ifsc,
       address1: owner.formattedAddress || "Not Provided",
-      transferMode: 'banktransfer'  // 🔴 This is mandatory for bankAccount + IFSC
+      transferMode: 'banktransfer'
     };
 
     console.log("Beneficiary payload:", payload);
-    
 
     const response = await axios.post(
       `${baseURL}/payout/v1/addBeneficiary`,

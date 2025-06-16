@@ -2,11 +2,12 @@ import Link from 'next/link';
 import React, { useState, useEffect, useRef } from 'react';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
-
 const Navbar = ({ setIsSignupOpen, setIsSigninOpen, setIsSanghSignup, setIsSanghSignin, setUserSignInOpen, scrollToSection }) => {
   const [isSignupDropdownOpen, setIsSignupDropdownOpen] = useState(false);
   const [isSigninDropdownOpen, setIsSigninDropdownOpen] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [mobileSignupOpen, setMobileSignupOpen] = useState(false);
+  const [mobileSigninOpen, setMobileSigninOpen] = useState(false);
 
   const signupRef = useRef(null);
   const signinRef = useRef(null);
@@ -20,8 +21,6 @@ const Navbar = ({ setIsSignupOpen, setIsSigninOpen, setIsSanghSignup, setIsSangh
     setIsSigninDropdownOpen(!isSigninDropdownOpen);
     setIsSignupDropdownOpen(false);
   };
-
-  
 
   const handleClickOutside = (event) => {
     if (signupRef.current && !signupRef.current.contains(event.target)) {
@@ -44,7 +43,7 @@ const Navbar = ({ setIsSignupOpen, setIsSigninOpen, setIsSanghSignup, setIsSangh
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-20 bg-gray-800 bg-opacity-60 text-white p-2">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-gray-800 bg-opacity-60 text-white p-2">
       <div className="flex justify-between items-center">
         {/* Desktop and Mobile Links in One Row */}
         <div className="flex gap-2 items-center w-full">
@@ -78,8 +77,6 @@ const Navbar = ({ setIsSignupOpen, setIsSigninOpen, setIsSanghSignup, setIsSangh
                   >
                     Dairy Sign Up
                   </button>
-
-
                 </div>
               )}
             </div>
@@ -155,8 +152,7 @@ const Navbar = ({ setIsSignupOpen, setIsSigninOpen, setIsSanghSignup, setIsSangh
               className="text-white py-1 px-3 rounded text-sm hover:bg-gray-800 hover:text-white transition duration-300 border-b-2 hover:border-b-2 hover:border-blue-500 border-gray-300"
               onClick={handlePageRefresh}
             >
-              <i className="fas fa-sync-alt"></i>{" "}
-              {/* Font Awesome Refresh Icon */}
+              <i className="fas fa-sync-alt"></i>
             </button>
           </div>
 
@@ -167,8 +163,7 @@ const Navbar = ({ setIsSignupOpen, setIsSigninOpen, setIsSanghSignup, setIsSangh
               className="flex items-center text-white hover:bg-gray-200 shadow-md p-2 rounded cursor-pointer w-fit"
               onClick={handlePageRefresh}
             >
-              <i className="fas fa-sync-alt"></i>{" "}
-              {/* Font Awesome Refresh Icon */}
+              <i className="fas fa-sync-alt"></i>
             </button>
 
             <Link href="/home">
@@ -185,81 +180,119 @@ const Navbar = ({ setIsSignupOpen, setIsSigninOpen, setIsSanghSignup, setIsSangh
               onClick={() => setIsDrawerOpen(!isDrawerOpen)}
               className="text-white text-2xl ml-44"
             >
-              &#9776; {/* Hamburger Icon */}
+              &#9776;
             </button>
           </div>
         </div>
 
         {/* Mobile Drawer */}
         {isDrawerOpen && (
-  <div className="fixed top-0 left-0 right-0 bottom-0 bg-black bg-opacity-90 z-60 flex justify-end">
-    <div className="relative w-80 h-full shadow-lg rounded-l-md bg-gradient-to-b from-violet-400 to-violet-600 p-6">
-      <button
-        className="absolute top-4 right-4 text-white text-3xl hover:text-gray-200 transition-colors duration-200"
-        onClick={() => setIsDrawerOpen(false)}
-      >
-        &#10005;
-      </button>
+          <div className="fixed top-0 left-0 right-0 bottom-0 bg-white/10 backdrop-blur-md z-60 flex justify-end">
+            <div className="relative w-80 h-full shadow-lg rounded-l-md bg-gradient-to-b from-violet-400 to-violet-600 p-6">
+              <button
+                className="absolute top-4 right-4 text-white text-3xl hover:text-gray-200 transition-colors duration-200"
+                onClick={() => setIsDrawerOpen(false)}
+              >
+                &#10005;
+              </button>
 
-      <div className="flex flex-col space-y-4 mt-12">
-        {/* Sign Up Dropdown */}
-        <div className="relative group">
-  <button className="w-full flex items-center justify-between text-white bg-violet-700 hover:bg-violet-800 shadow-md px-4 py-3 rounded-lg transition-colors duration-200">
-    <span className="font-semibold">Sign Up</span>
-    <span className="ml-2 transform transition-transform duration-200 group-hover:rotate-180">▼</span>
-  </button>
-  <div className="hidden group-hover:block absolute w-full bg-white shadow-lg rounded-md mt-2 z-10">
-    <Link href="/Docter/Signup">
-      <button
-        className="block w-full text-left text-violet-700 hover:bg-violet-50 px-4 py-2 rounded-t-md transition-colors duration-200">Dr. Sign Up</button>
-    </Link>
-    <button
-      className="block w-full text-left text-violet-700 hover:bg-violet-50 px-4 py-2 rounded-b-md transition-colors duration-200"
-      onClick={() => {
-        setIsSignupOpen(true);
-        setIsDrawerOpen(false);
-      }}
-    >
-      Dairy Sign Up
-    </button>
-  </div>
-</div>
+              <div className="flex flex-col space-y-4 mt-12">
+                {/* Sign Up Dropdown */}
+                <div className="relative">
+                  <button 
+                    className="w-full flex items-center justify-between text-white bg-violet-700 hover:bg-violet-800 shadow-md px-4 py-3 rounded-lg transition-colors duration-200"
+                    onClick={() => setMobileSignupOpen(!mobileSignupOpen)}
+                  >
+                    <span className="font-semibold">Sign Up</span>
+                    <span className={`ml-2 transform transition-transform duration-200 ${mobileSignupOpen ? 'rotate-180' : ''}`}>
+                      ▼
+                    </span>
+                  </button>
+                  {mobileSignupOpen && (
+                    <div className="w-full bg-white shadow-lg rounded-md mt-2 z-10">
+                      <button
+                        className="block w-full text-left text-violet-700 hover:bg-violet-50 px-4 py-2 rounded-b-md transition-colors duration-200"
+                        onClick={() => {
+                          setIsSignupOpen(true);
+                          setIsDrawerOpen(false);
+                        }}
+                      >
+                        Dairy Sign Up
+                      </button>
+                    </div>
+                  )}
+                </div>
 
-        {/* Sign In Dropdown */}
-        <div className="relative group">
-          <button className="w-full flex items-center justify-between text-white bg-violet-700 hover:bg-violet-800 shadow-md px-4 py-3 rounded-lg transition-colors duration-200">
-            <span className="font-semibold">Sign In</span>
-            <span className="ml-2 transform transition-transform duration-200 group-hover:rotate-180">▼</span>
-          </button>
-          <div className="hidden group-hover:block absolute w-full bg-white shadow-lg rounded-md mt-2 z-10">
-            <button
-              className="block w-full text-left text-violet-700 hover:bg-violet-50 px-4 py-2 rounded-t-md transition-colors duration-200"
-              onClick={() => {
-                setIsSigninOpen(true);
-                setIsDrawerOpen(false);
-              }}
-            >
-              Owner Sign In
-            </button>
-            <button
-              className="block w-full text-left text-violet-700 hover:bg-violet-50 px-4 py-2 rounded-b-md transition-colors duration-200"
-              onClick={() => {
-                setUserSignInOpen(true);
-                setIsDrawerOpen(false);
-              }}
-            >
-              User Sign In
-            </button>
-            <Link href="/Docter/Signin">
-            <button
-              className="block w-full text-left text-violet-700 hover:bg-violet-50 px-4 py-2 rounded-t-md transition-colors duration-200" >DR. Sign In</button>
-            </Link>
+                {/* Sign In Dropdown */}
+                <div className="relative">
+                  <button 
+                    className="w-full flex items-center justify-between text-white bg-violet-700 hover:bg-violet-800 shadow-md px-4 py-3 rounded-lg transition-colors duration-200"
+                    onClick={() => setMobileSigninOpen(!mobileSigninOpen)}
+                  >
+                    <span className="font-semibold">Sign In</span>
+                    <span className={`ml-2 transform transition-transform duration-200 ${mobileSigninOpen ? 'rotate-180' : ''}`}>
+                      ▼
+                    </span>
+                  </button>
+                  {mobileSigninOpen && (
+                    <div className="w-full bg-white shadow-lg rounded-md mt-2 z-10">
+                      <button
+                        className="block w-full text-left text-violet-700 hover:bg-violet-50 px-4 py-2 transition-colors duration-200"
+                        onClick={() => {
+                          setIsSigninOpen(true);
+                          setIsDrawerOpen(false);
+                        }}
+                      >
+                        Dairy Login
+                      </button>
+                      <button
+                        className="block w-full text-left text-violet-700 hover:bg-violet-50 px-4 py-2 transition-colors duration-200"
+                        onClick={() => {
+                          setUserSignInOpen(true);
+                          setIsDrawerOpen(false);
+                        }}
+                      >
+                        User Login
+                      </button>
+                      <Link href="/Docter/Signin">
+                        <button
+                          className="block w-full text-left text-violet-700 hover:bg-violet-50 px-4 py-2 rounded-b-md transition-colors duration-200"
+                        >
+                          DR. Sign In
+                        </button>
+                      </Link>
+                    </div>
+                  )}
+                </div>
+
+                {/* Additional Mobile Links */}
+                <Link href="/Docter">
+                  <button className="w-full text-left text-white bg-violet-700 hover:bg-violet-800 shadow-md px-4 py-3 rounded-lg transition-colors duration-200">
+                    DR Home
+                  </button>
+                </Link>
+                <button
+                  className="w-full text-left text-white bg-violet-700 hover:bg-violet-800 shadow-md px-4 py-3 rounded-lg transition-colors duration-200"
+                  onClick={() => {
+                    scrollToSection("testimonials");
+                    setIsDrawerOpen(false);
+                  }}
+                >
+                  How to use
+                </button>
+                <button
+                  className="w-full text-left text-white bg-violet-700 hover:bg-violet-800 shadow-md px-4 py-3 rounded-lg transition-colors duration-200"
+                  onClick={() => {
+                    scrollToSection("contact");
+                    setIsDrawerOpen(false);
+                  }}
+                >
+                  Contact
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-    </div>
-  </div>
-)}
+        )}
       </div>
     </nav>
   );

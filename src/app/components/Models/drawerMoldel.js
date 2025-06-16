@@ -60,7 +60,7 @@ const Drawer = ({ isOpen, onClose }) => {
         <div className="p-4">
           <Image src="/assets/milkhub-512.png" alt="Logo" width={100} height={100} />
           <Link href={"/home/KYCform"}>
-          <button className="absolute top-2 right-2 text-gray-600">
+          <button className="absolute top-20 right-10 text-gray-600 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
             KYC
           </button>
           </Link>

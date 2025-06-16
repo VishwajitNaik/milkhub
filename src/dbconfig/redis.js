@@ -5,8 +5,14 @@ let redisClient;
 export function connectRedis() {
   if (!redisClient) {
     const redisUrl = process.env.NODE_ENV === 'production'
-    ? process.env.REDIS_URL_PROD || 'redis://redis:6379'
-    : process.env.REDIS_URL_DEV || 'redis://redis:6379';
+    ? process.env.REDIS_URL_PROD
+    : process.env.REDIS_URL_DEV;
+
+    console.log('🔍 Using Redis URL:', redisUrl);
+
+    console.log("NODE_ENV:", process.env.NODE_ENV);
+console.log("REDIS_URL_PROD:", process.env.REDIS_URL_PROD);
+console.log("REDIS_URL_DEV:", process.env.REDIS_URL_DEV);
 
     redisClient = new Redis(redisUrl, {
       tls: redisUrl.startsWith('rediss') ? { rejectUnauthorized: false } : undefined, // Only for Upstash

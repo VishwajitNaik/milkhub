@@ -86,8 +86,8 @@ const BillSummary = () => {
   const totalNetPayment = billData.reduce((total, bill) => total + parseFloat(bill.netPayment || 0), 0).toFixed(1);
   const totalBuffExtraRate = billData.reduce((total, bill) => total + parseFloat(bill.totalBuffExtraRate || 0), 0).toFixed(1);
   const totalCowExtraRate = billData.reduce((total, bill) => total + parseFloat(bill.totalCowExtraRate || 0), 0).toFixed(1);
-
-  console.log("totalBuffExtraRate",totalBuffExtraRate);
+  const totalEarningsFromVisits = billData.reduce((total, bill) => total + parseFloat(bill.totalEarningsFromVisits || 0), 0).toFixed(1);
+  console.log("totalEarningsFromVisits",totalEarningsFromVisits);
   console.log("totalCowExtraRate",totalCowExtraRate);
   
 
@@ -188,7 +188,7 @@ const BillSummary = () => {
 
         {billsGenerated && billData.length > 0 && (
           <div className="overflow-x-auto">
-            <table className="w-full bg-gray-200 border-collapse border border-gray-200 mb-6">
+            <table className="w-full bg-gray-200 text-center border-collapse border border-gray-200 mb-6">
               <thead className="bg-gray-100">
                 <tr>
                   <th className="text-black border border-gray-200 px-4 py-2">Register No</th>
@@ -262,7 +262,7 @@ const BillSummary = () => {
         )}
 
         {selectedBill && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4">
+          <div className="fixed top-0 left-0 right-0 bottom-0 bg-white/10 backdrop-blur-sm flex justify-center items-center z-50">
             <div className="bg-white p-6 rounded-md shadow-md max-w-2xl w-full max-h-[90vh] overflow-y-auto">
               <h2 className="text-black text-xl font-bold mb-4 text-center">Additional Details</h2>
 

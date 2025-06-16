@@ -119,7 +119,7 @@ const SingleDairy = () => {
                 Register No:
               </strong>
               <span className="text-gray-800 text-lg font-medium">
-              {owner.ownerName}
+              {owner.registerNo}
               </span>
             </div>
 

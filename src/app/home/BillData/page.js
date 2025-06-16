@@ -86,8 +86,8 @@ const BillSummary = () => {
   const totalBillKapat = billData.reduce((acc, item) => acc + parseFloat(item.totalBillKapat || 0), 0).toFixed(1);
   const totalNetPayment = billData.reduce((acc, item) => acc + parseFloat(item.netPayment || 0), 0).toFixed(1);
   const totalKapat = billData.reduce((acc, item) => acc + parseFloat(item.totalKapat || 0), 0).toFixed(1);
-
-
+  const totalVisitEarnings = billData.reduce((acc, item) => acc + parseFloat(item.totalEarningsFromVisits || 0), 0).toFixed(1);
+  const totalVisitFee = billData.reduce((acc, item) => acc + parseFloat(item.totalVisitFee || 0), 0).toFixed(1);  
 
   if (loading)
     return (
@@ -215,6 +215,7 @@ const BillSummary = () => {
               <th className='p-3 text-black font-semibold border text-center border-gray-700'>एकूण रक्कम </th>
               <th className='p-3 text-black font-semibold border text-center border-gray-700'>स्थिर कपात </th>
               <th className='p-3 text-black font-semibold border text-center border-gray-700'>पशूखाद्य </th>
+              <th className='p-3 text-black font-semibold border text-center border-gray-700'>व्हिजीट  फी</th>
               <th className='p-3 text-black font-semibold border text-center border-gray-700'>निव्वळ अदा </th>
               <th className='p-3 text-black font-semibold border text-center border-gray-700'>सही</th>
             </tr>
@@ -229,6 +230,7 @@ const BillSummary = () => {
   <td className="p-3 text-center border border-gray-500 text-black">{Number(item.totalRakkam).toLocaleString("mr-IN")}</td>
   <td className="p-3 text-center border border-gray-500 text-black">{Math.floor(Number(item.totalKapatRateMultiplybyTotalLiter)).toLocaleString("mr-IN")}</td>
   <td className="p-3 text-center border border-gray-500 text-black">{Number(item.totalBillKapat).toLocaleString("mr-IN")}</td>
+  <td className="p-3 text-center border border-gray-500 text-black">{Number(item.totalVisitEarnings).toLocaleString("mr-IN")}</td>
   <td className="p-3 text-center border border-gray-500 text-black">{Number(item.netPayment).toLocaleString("mr-IN")}</td>
   <td className="p-3 text-center border border-gray-500 text-black">{item.sahi}</td>
 </tr>
@@ -344,6 +346,10 @@ const BillSummary = () => {
                 <tr>
                   <td className='bg-gray-200 text-red-600 px-4 py-2 border border-gray-500 text-center'><strong>निव्वळ रक्कम </strong></td>
                   <td className='bg-gray-200 text-red-600 px-4 py-2 border border-gray-500 text-center'>{Number(totalNetPayment).toLocaleString("mr-IN")}</td>
+                </tr>
+                <tr>
+                  <td className='text-black px-4 py-2 border border-gray-500 text-center'><strong>एकूण व्हिजीट फी </strong></td>
+                  <td className='text-black px-4 py-2 border border-gray-500 text-center'>{Number(totalVisitFee).toLocaleString("mr-IN")}</td>
                 </tr>
               </tbody>
             </table>

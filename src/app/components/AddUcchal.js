@@ -4,6 +4,7 @@ import { useParams } from 'next/navigation';
 import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import useUserStore from '@/app/store/useUserList';
 
 const AddUcchal = () => {
     const { id } = useParams();
@@ -12,25 +13,15 @@ const AddUcchal = () => {
     const [selectedOption, setSelectedOption] = useState('');
     const [selectedUser, setSelectedUser] = useState(null);
     const [rakkam, setRakkam] = useState('');
-    const [users, setUsers] = useState([]);
+    // const [users, setUsers] = useState([]);
     const inputRefs = useRef([]);
     const registerNoRef = useRef(null);
+    const { users, loading, error, fetchUsers } = useUserStore();
 
-    // ✅ Fetch Users
+  // Fetch users
   useEffect(() => {
-    async function getOwnerUsers() {
-      try {
-        const res = await axios.get('/api/user/getUserList');
-        setUsers(res.data.data); 
-        console.log("user List",res.data.data);
-        
-      } catch (error) {
-        console.log("Failed to fetch users:", error.message);
-        toast.error("सर्वर डाउन आहे ");
-      }
-    }
-    getOwnerUsers();
-  }, []);
+    fetchUsers();
+  }, [fetchUsers]);
 
     // ✅ Set Current Date
     useEffect(() => {

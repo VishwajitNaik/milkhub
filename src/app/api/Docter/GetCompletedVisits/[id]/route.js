@@ -7,7 +7,7 @@ import { getDataFromToken } from '@/helpers/getDataFromDrToken';
 
 connect();
 
-export async function GET(request){
+export async function GET(request) {
     try {
         await connect();
 
@@ -45,22 +45,27 @@ export async function GET(request){
                 { status: 404 }
             );
         }
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
+        // const today = new Date();
+        // today.setHours(0, 0, 0, 0);
+        // const tomorrow = new Date(today);
+        // tomorrow.setDate(tomorrow.getDate() + 1);
 
         const visits = await DocterVisit.find({
             createdBy: owner._id,
-            date: {
-                $gte: today,
-                $lt: tomorrow
-            },
             status: 'completed'
-        }).populate({ 
-            path: "createdBy", 
-            select: "dairyName ownerName" // Added ownerName for more context
-        }).lean(); // Using lean() for better performance 
+        }).populate({
+            path: "createdBy",
+            select: "dairyName ownerName"
+        }).lean();
+
+//         const visits = await DocterVisit.find({
+//     createdBy: owner._id,
+//     date: {
+//         $gte: today,
+//         $lt: tomorrow
+//     },
+//     status: 'completed'
+// })
 
         if (!visits || visits.length === 0) {
             return NextResponse.json(
@@ -72,7 +77,7 @@ export async function GET(request){
         return NextResponse.json({
             message: 'Completed visits fetched successfully',
             data: visits
-        }); 
+        });
 
     } catch (error) {
         console.error("Error in GET request:", error);
@@ -80,6 +85,6 @@ export async function GET(request){
             { error: "Internal server error" },
             { status: 500 }
         );
-        
+
     }
 }

@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { connect } from "@/dbconfig/dbconfig";
 import { getDataFromToken } from "@/helpers/getSanghFormToken";
-import Sangh from "@/models/SanghModel";
+import Milk from "@/models/MakeMilk";
+import Owner from "@/models/ownerModel";
 import * as d3 from "d3";
 
 connect();
@@ -14,16 +15,22 @@ export async function GET(request) {
             return NextResponse.json({ error: "User not authenticated" }, { status: 401 });
         }
 
-        const sangh = await Sangh.findById(sanghId).populate("milkRecords");
-        console.log("Sangh:", sangh);
+        let owners = [];
 
-        if (!sangh) {
-            return NextResponse.json({ error: "Sangh not found" }, { status: 404 });
-        }
+        owners = await Owner.find({ sangh: sanghId });
+        const ownerIds = owners.map((owner) => owner._id);
+try {
+    owners = await Owner.find({ sangh: sanghId });
+} catch (err) {
+    console.error("❌ DB fetch error for owners:", err);
+    return NextResponse.json({ error: "Database fetch failed" }, { status: 500 });
+}
+        
 
         const { searchParams } = new URL(request.url);
         const filter = searchParams.get("filter") || "daily";
-        const milkRecords = sangh.milkRecords;
+
+        const milkRecords = await Milk.find({ createdBy: { $in: ownerIds } }).lean();
 
         // Separate cow and buff records
         const cowRecords = milkRecords.filter((record) => record.milkType === "cow");
@@ -76,9 +83,6 @@ export async function GET(request) {
         // Compute trend data separately
         const cowTrendData = computeTrendData(groupedCowData);
         const buffTrendData = computeTrendData(groupedBuffData);
-
-        console.log("Cow Trend Data:", cowTrendData);
-        console.log("Buff Trend Data:", buffTrendData);
 
         return NextResponse.json({ cowTrendData, buffTrendData }, { status: 200 });
 

@@ -5,6 +5,7 @@ import axios from 'axios';
 import Image from 'next/image'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import useKapat from '@/app/store/useKapat';
 
 const AddUserOrder = () => {
   const { id } = useParams();
@@ -17,21 +18,26 @@ const AddUserOrder = () => {
   const [users, setUsers] = useState([]);
   const inputRefs = useRef([]);
   const registerNoRef = useRef(null); // Create a ref for registerNo input field
-  const [kapat, setKapat] = useState([]);
+  // const [kapat, setKapat] = useState([]);
+         const { kapat, totalRakkam, fetchKapat } = useKapat();
 
-  useEffect(() => {
-    async function getKapatOptions() {
-      try {
-        const res = await axios.get('/api/kapat/getKapat');
-        const kapat = res.data.data.filter(item => item.KapatType === 'Kapat');
-        setKapat(kapat);
-      } catch (error) {
-        console.log("Failed to fetch kapat options:", error.message);
-        toast.error("सर्वर डाउन आहे कपात विवरण लोड करण्यात त्रुटी आहे");
-      }
-    }
-    getKapatOptions();
-  }, []);
+    useEffect(() => {
+      fetchKapat();
+    },[]);
+
+  // useEffect(() => {
+  //   async function getKapatOptions() {
+  //     try {
+  //       const res = await axios.get('/api/kapat/getKapat');
+  //       const kapat = res.data.data.filter(item => item.KapatType === 'Kapat');
+  //       setKapat(kapat);
+  //     } catch (error) {
+  //       console.log("Failed to fetch kapat options:", error.message);
+  //       toast.error("सर्वर डाउन आहे कपात विवरण लोड करण्यात त्रुटी आहे");
+  //     }
+  //   }
+  //   getKapatOptions();
+  // }, []);
 
   useEffect(() => {
     async function getOwnerUsers() {

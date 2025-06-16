@@ -1,5 +1,5 @@
 "use client";
-import React, { use, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Modal from "./components/Models/Modal";
 import SignupForm from "./components/SignupForm";
 import SigninForm from "./components/SigninForm";
@@ -7,16 +7,14 @@ import UserSign from "./components/UserSignIn";
 import SignupSangh from "./components/SignUpSangh";
 import SignInSangh from "./components/SignInSangh";
 import Navbar from "./components/Navebars/HomeNavBar";
-import HeroBanner from "./components/HeroBanner";
 import Testimonials from "./components/Testimonials";
 import FAQ from "./components/FAQ";
 import Footer from "./components/Footer";
 import Contact from "./components/Contact";
-import Map from "./components/Map";
 import AboutUs from "./components/AboutUs";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
-import { ScrollTrigger } from "gsap/ScrollTrigger"; // Import ScrollTrigger
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 gsap.registerPlugin(ScrollTrigger);
 import SmoothScrollWrapper from "./components/Animation/SmoothScrollWrapper";
 import { connectToDB } from "./lib/dbconfig.js";
@@ -34,7 +32,6 @@ const Home = () => {
 
   useEffect(() => {
     const fetchOwnerName = async () => {
-      // Check if the user is authenticated (e.g., check if a token exists)
       const isAuthenticated = localStorage.getItem("token") || sessionStorage.getItem("token");
   
       if (isAuthenticated) {
@@ -43,9 +40,9 @@ const Home = () => {
           const data = await response.json();
   
           if (response.ok) {
-            setName(data.ownerName); // Set owner name in state
+            setName(data.ownerName);
           } else {
-            console.error(data.error); // Log error if any
+            console.error(data.error);
           }
         } catch (error) {
           console.error("Error fetching owner name:", error);
@@ -57,31 +54,20 @@ const Home = () => {
   
     fetchOwnerName();
   }, []);
-  
 
-useGSAP(() => {
+  useGSAP(() => {
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: containerRef.current,
+        start: "50% 50%",
+        scrub: true,
+      },
+    });
 
-  const tl = gsap.timeline({
-    scrollTrigger: {
-      trigger: containerRef.current,
-      start: "50% 50%",
-      scrub: true,
-    },
+    tl.to(textRef.current, { y:-300 }, 'a')
+     .to(videoRef.current, { scale: 1.5 }, 'a')
+     .to(containerRef.current, { y:400 }, 'a')
   });
-
-  tl.to(
-    textRef.current, { y:-300
-     }, 'a')
-     .to(videoRef.current, {
-      scale: 1.5
-     }, 'a')
-     .to(containerRef.current, {
-      y:400
-     }, 'a')
-
-});
-
-
 
   const scrollToSection = (section) => {
     switch (section) {
@@ -111,106 +97,96 @@ useGSAP(() => {
 
   return (
     <SmoothScrollWrapper>
-      <Navbar
-        setIsSignupOpen={setIsSignupOpen}
-        setIsSigninOpen={setIsSigninOpen}
-        setIsSanghSignup={setIsSanghSignup}
-        setIsSanghSignin={setIsSanghSignin}
-        setUserSignInOpen={setUserSignInOpen}
-        scrollToSection={scrollToSection}
-      />
-      
-      <div ref={containerRef} className="relative text-white">
-      <div className="relative w-full h-screen sm:h-[70vh] lg:h-screen overflow-hidden">
-  <video
-    ref={videoRef}
-    autoPlay
-    loop
-    muted
-    className="w-full h-full object-cover absolute top-0 left-0 opacity-20"
-  >
-    <source src="/assets/milk.mp4" type="video/mp4" />
-  </video>
-</div>
-
-
-
-<h1
-  ref={textRef}
-  className=" absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-center whitespace-nowrap"
->
-  <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-violet-500"> W</span>elcome to Milk<span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-violet-500">HUB</span>
-
-</h1>
-<h1>
-  {name ? (
-    <h2 className="absolute top-2/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-2xl sm:text-4xl font-semibold text-center text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-violet-500">
-      {name}
-    </h2>
-  ) : (
-    <h2 className="absolute top-2/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-2xl sm:text-4xl font-semibold text-center text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-violet-500">
-      Login to get started
-    </h2>
-  )}
-</h1>
-
-
-      </div>
-
-
-      <div className="w-full">
-        <AboutUs />
-      </div>
-
-      <section
-        ref={testimonialsRef}
-        className="testimonials-section bg-gray-800 flex flex-col justify-center items-center"
-      >
-        <div className="bg-gray-300 w-4/5 sm:px-8 md:px-16 lg:px-20 mt-20 pb-4 rounded-lg shadow-lg">
-          <Testimonials />
-        </div>
-
-        <div
-          className="w-full max-w-4xl mb-8 mt-20 bg-white p-6 rounded-lg shadow-md"
-          ref={contactRef}
+      {/* Video background - fixed position behind all content */}
+      <div className="fixed inset-0 -z-10">
+        <video
+          ref={videoRef}
+          autoPlay
+          loop
+          muted
+          className="w-full h-full object-cover opacity-20"
         >
-          <Contact />
+          <source src="/assets/milk.mp4" type="video/mp4" />
+        </video>
+      </div>
+
+      {/* Main content */}
+      <div className="relative z-10">
+        <Navbar
+          setIsSignupOpen={setIsSignupOpen}
+          setIsSigninOpen={setIsSigninOpen}
+          setIsSanghSignup={setIsSanghSignup}
+          setIsSanghSignin={setIsSanghSignin}
+          setUserSignInOpen={setUserSignInOpen}
+          scrollToSection={scrollToSection}
+        />
+        
+        <div ref={containerRef} className="relative text-white min-h-screen">
+          <h1
+            ref={textRef}
+            className="absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-center whitespace-nowrap"
+          >
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-violet-500">W</span>elcome to Milk<span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-violet-500">HUB</span>
+          </h1>
+          
+          <h1>
+            {name ? (
+              <h2 className="absolute top-2/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-2xl sm:text-4xl font-semibold text-center text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-violet-500">
+                {name}
+              </h2>
+            ) : (
+              <h2 className="absolute top-2/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-2xl sm:text-4xl font-semibold text-center text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-violet-500">
+                Login to get started
+              </h2>
+            )}
+          </h1>
         </div>
-      </section>
 
-      <Footer />
+        <div className="w-full">
+          <AboutUs />
+        </div>
 
-      <Modal isOpen={isSignupOpen} onClose={handleModalClose(setIsSignupOpen)}>
-        <SignupForm />
-      </Modal>
+        <section
+          ref={testimonialsRef}
+          className="testimonials-section bg-gray-800 flex flex-col justify-center items-center"
+        >
+          <div className="bg-gray-300 w-4/5 sm:px-8 md:px-16 lg:px-20 mt-20 pb-4 rounded-lg shadow-lg">
+            <Testimonials />
+          </div>
 
-      <Modal isOpen={isSigninOpen} onClose={handleModalClose(setIsSigninOpen)}>
-        <SigninForm />
-      </Modal>
+          <div
+            className="w-full max-w-4xl mb-8 mt-20 bg-white p-6 rounded-lg shadow-md"
+            ref={contactRef}
+          >
+            <Contact />
+          </div>
+        </section>
 
-      <Modal
-        isOpen={isUserSignInOpen}
-        onClose={handleModalClose(setUserSignInOpen)}
-      >
-        <UserSign />
-      </Modal>
+        <Footer />
 
-      <Modal
-        isOpen={isSanghSignup}
-        onClose={handleModalClose(setIsSanghSignup)}
-      >
-        <SignupSangh />
-      </Modal>
+        {/* Modals - no gray overlay */}
+        <Modal isOpen={isSignupOpen} onClose={handleModalClose(setIsSignupOpen)}>
+          <SignupForm />
+        </Modal>
 
-      <Modal
-        isOpen={isSanghSignin}
-        onClose={handleModalClose(setIsSanghSignin)}
-      >
-        <SignInSangh />
-      </Modal>
-      </SmoothScrollWrapper>
+        <Modal isOpen={isSigninOpen} onClose={handleModalClose(setIsSigninOpen)}>
+          <SigninForm />
+        </Modal>
+
+        <Modal isOpen={isUserSignInOpen} onClose={handleModalClose(setUserSignInOpen)}>
+          <UserSign />
+        </Modal>
+
+        <Modal isOpen={isSanghSignup} onClose={handleModalClose(setIsSanghSignup)}>
+          <SignupSangh />
+        </Modal>
+
+        <Modal isOpen={isSanghSignin} onClose={handleModalClose(setIsSanghSignin)}>
+          <SignInSangh />
+        </Modal>
+      </div>
+    </SmoothScrollWrapper>
   );
 };
 
 export default Home;
-

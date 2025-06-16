@@ -105,7 +105,7 @@ const Page = () => {
       }
     };
   return (
-    <div className="bg-blue-300 sm:bg-gray-500 w-4/5 sm:w-7/12 mx-auto h-auto py-1 px-1 rounded-lg mt-4">
+    <div className="bg-blue-300 sm:bg-gray-500 w-4/4 sm:w-7/12 mx-auto h-auto py-1 px-1 rounded-lg mt-4">
             <h1 className="text-xl md:text-2xl font-semibold text-black mb-4 flex flex-wrap items-center justify-center md:justify-start">
               उत्पादक खरेदी
               <Image

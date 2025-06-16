@@ -425,7 +425,7 @@ export default function TritmentReq() {
                 {owners.length > 0 && (
                     <div className="overflow-x-auto mb-8 px-4 bg-white rounded-xl shadow-md">
                         <h2 className="text-xl font-semibold text-blue-800 mb-4 text-center py-3 bg-blue-50 rounded-t-xl">
-                            संग मालिकाची माहिती (Owner Information)
+                         Owner Information
                         </h2>
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gray-100">

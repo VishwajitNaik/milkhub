@@ -31,5 +31,5 @@ const orderSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
-const Orders = mongoose.models.Orders || mongoose.model('Orders', orderSchema);
+const Orders = mongoose.models.Orders || mongoose.model('OwnerOrders', orderSchema);
 export default Orders;

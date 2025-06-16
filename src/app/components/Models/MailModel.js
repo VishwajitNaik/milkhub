@@ -31,7 +31,7 @@ export async function mailAction({ email }) {
         });
 
         // Email content
-        const htmlBody = `Click here to <a href="http://localhost:3000/home/reset-password/${token}">Reset Password</a>`;
+        const htmlBody = `Click here to <a href="http://localhost:8080/home/reset-password/${token}">Reset Password</a>`;
         const mailOptions = {
             from: 'vishwajitnaik1999@gmail.com',
             to: email,

@@ -23,7 +23,7 @@ export async function POST(request) {
         console.log("Authenticated Sangh Name:", sangh.SanghName);
 
         const reqBody = await request.json();
-        const { name, phone, address, specialization, password } = reqBody;
+        const { name, phone, address, specialization, center, password } = reqBody;
 
         // Check if the Docter already exists
         const existingDocter = await Docter.findOne({ phone });
@@ -41,6 +41,7 @@ export async function POST(request) {
             phone,
             address,
             specialization,
+            center,
             sangh: sangh._id,
             password: hashPassword,
         });

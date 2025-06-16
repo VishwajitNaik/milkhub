@@ -12,7 +12,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Calculator from '../components/MobileCalc.js';
 import Link from "next/link";
-
+import useUserStore from '@/app/store/useUserList';
 
 const renderDetailsTable = (details) => (
   <table className="min-w-full">
@@ -34,6 +34,7 @@ const renderDetailsTable = (details) => (
 );
 
 const Page = () => {
+    const [isOpen, setIsOpen] = useState(false);
   const [selectedSession, setSelectedSession] = useState("morning");
   const [currentDate, setCurrentDate] = useState("");
   const [currentTime, setCurrentTime] = useState("");
@@ -57,7 +58,7 @@ const Page = () => {
   const [totalRakkamCow, setTotalRakkamCow] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [users, setUsers] = useState([]);
+  // const [users, setUsers] = useState([]);
   const [owners, getOwners] = useState([]);
   const [ownerName, setOwnerName] = useState("");
   const [rates, setRates] = useState({});
@@ -80,6 +81,7 @@ const Page = () => {
 
   const [isPopupOpen, setPopupOpen] = useState(false);
   const [popupContent, setPopupContent] = useState(null);
+  const { users, fetchUsers } = useUserStore();
 
   const fetchDefaultSNF = async () => {
     setLoading(true);
@@ -264,19 +266,10 @@ const Page = () => {
     fetchTodayMilkRecords();
   }, []);
 
+  // Fetch users
   useEffect(() => {
-    async function getOwnerUsers() {
-      try {
-        const res = await axios.get("/api/user/getUserList");
-        setUsers(res.data.data);
-        console.log(res.data.data);
-      } catch (error) {
-        console.log("Failed to fetch users:", error.message);
-        toast.success("यूजर लोड हॉत आहेत ");
-      }
-    }
-    getOwnerUsers();
-  }, []);
+    fetchUsers();
+  }, [fetchUsers]);
 
   useEffect(() => {
     const date = new Date();
@@ -418,12 +411,12 @@ const Page = () => {
     const R = (R1 - R2) / (HF - LF); // Calculate R
     console.log("R", R);
     let FR = 0;
-    if(X < HF){
-       FR = (R1 - (HF - X) * R); // 30.90
+    if (X < HF) {
+      FR = (R1 - (HF - X) * R); // 30.90
     } else {
-       FR = (R1 - (HF - HF) * R); // 30.90
+      FR = (R1 - (HF - HF) * R); // 30.90
     }
-     // Calculate FR
+    // Calculate FR
     return FR; // Return the calculated fat rate
   };
 
@@ -432,17 +425,17 @@ const Page = () => {
     const R = (R1 - R2) / (HF - LF); // Calculate R
     console.log("R", R);
     let FR = 0;
-    if(X < HF){
-       FR = (R1 - (HF - X) * R); // 30.90
+    if (X < HF) {
+      FR = (R1 - (HF - X) * R); // 30.90
     } else {
-       FR = (R1 - (HF - HF) * R); // 30.90
+      FR = (R1 - (HF - HF) * R); // 30.90
     }
-     // Calculate FR
+    // Calculate FR
     return FR; // Return the calculated fat rate
   };
 
   const calculateTotalRateCow = (X, Y) => {
- 
+
     const FR = calculateValuesCow(X, cowConstants); // Calculate the fat rate based on selected constants
     let TFR = FR; // Initialize total rate to Fat Rate (FR)
 
@@ -451,12 +444,12 @@ const Page = () => {
       if (Y >= range.start && Y <= range.end) {
         const SNFRate = 10 * (Y - range.start) * range.rate; // Calculate SNF rate for the range
         TFR += SNFRate; // Add SNF rate to total rate
-        
+
       } else if (Y > range.end) {
         const SNFRate = 10 * (range.end - range.start) * range.rate; // Calculate full SNF rate for the range        
         TFR += SNFRate; // Add SNF rate to total rate
-        console.log("TFR",TFR);
-        
+        console.log("TFR", TFR);
+
       }
     });
 
@@ -464,7 +457,7 @@ const Page = () => {
   };
 
   const calculateTotalRateBuff = (X, Y) => {
- 
+
     const FR = calculateValuesBuff(X, buffaloConstants); // Calculate the fat rate based on selected constants
     let TFR = FR; // Initialize total rate to Fat Rate (FR)
 
@@ -473,38 +466,17 @@ const Page = () => {
       if (Y >= range.start && Y <= range.end) {
         const SNFRate = 10 * (Y - range.start) * range.rate; // Calculate SNF rate for the range
         TFR += SNFRate; // Add SNF rate to total rate
-        
+
       } else if (Y > range.end) {
         const SNFRate = 10 * (range.end - range.start) * range.rate; // Calculate full SNF rate for the range        
         TFR += SNFRate; // Add SNF rate to total rate
-        console.log("TFR",TFR);
-        
+        console.log("TFR", TFR);
+
       }
     });
 
     return TFR; // Return the calculated total rate
   };
-
-  // const calculateTotalRate = (X, Y) => {
-  //   // Determine whether it's buffalo or cow milk
-  //   const constants = X >= 5.5 ? buffaloConstants : cowConstants;
-
-  //   const FR = calculateValues(X, constants); // Calculate the fat rate based on selected constants
-  //   let TFR = FR; // Initialize total rate to Fat Rate (FR)
-
-  //   // Loop through the SNF ranges to calculate the total rate
-  //   constants.SNF_RANGES.forEach((range) => {
-  //     if (Y >= range.start && Y <= range.end) {
-  //       const SNFRate = 10 * (Y - range.start) * range.rate; // Calculate SNF rate for the range
-  //       TFR += SNFRate; // Add SNF rate to total rate
-  //     } else if (Y > range.end) {
-  //       const SNFRate = 10 * (range.end - range.start) * range.rate; // Calculate full SNF rate for the range
-  //       TFR += SNFRate; // Add SNF rate to total rate
-  //     }
-  //   });
-
-  //   return TFR; // Return the calculated total rate
-  // };
 
   const calculateRates = () => {
     const fatInput = parseFloat(inputRefs.current[2]?.value || "0");
@@ -516,8 +488,8 @@ const Page = () => {
       return;
     }
 
-    console.log("fat",fatInput);
-    
+    console.log("fat", fatInput);
+
 
     let rate = 0; // Default to 0 to avoid undefined errors
 
@@ -529,122 +501,122 @@ const Page = () => {
       rate = parseFloat(calculateTotalRateBuff(fatInput, snfInput)) || 0;
     }
 
-   
+
 
     const amount = liter * rate;
 
     inputRefs.current[4].value = rate.toFixed(2); // Set calculated rate
     inputRefs.current[5].value = amount.toFixed(2); // Set calculated amount
-};
+  };
 
 
-const clearForm = (shouldClear = true, hasPreviousData = false) => {
-  if (!shouldClear) return; // Prevent clearing if shouldClear is false
+  const clearForm = (shouldClear = true, hasPreviousData = false) => {
+    if (!shouldClear) return; // Prevent clearing if shouldClear is false
 
-  // ✅ Don't clear fields if previous data exists
-  if (!hasPreviousData) {
-    inputRefs.current.forEach((input, index) => {
-      if (input && index >= 1) {
-        input.value = ""; // Clear only the relevant fields
+    // ✅ Don't clear fields if previous data exists
+    if (!hasPreviousData) {
+      inputRefs.current.forEach((input, index) => {
+        if (input && index >= 1) {
+          input.value = ""; // Clear only the relevant fields
+        }
+      });
+
+      setFat(""); // Reset fat input
+      if (useDefault === true) {
+        setSnf(defaultSNF.snf); // Set SNF to default if useDefault is true
+      } else {
+        setSnf(""); // Otherwise, clear SNF input
       }
-    });
-
-    setFat(""); // Reset fat input
-    if (useDefault === true) {
-      setSnf(defaultSNF.snf); // Set SNF to default if useDefault is true
-    } else {
-      setSnf(""); // Otherwise, clear SNF input
     }
-  }
-};
+  };
 
-const handleGetMilkData = async () => {
-  try {
-    if (!selectedMilk || !selectedOption) {
-      alert("Please select a user and milk type before fetching data");
-      return;
-    }
+  const handleGetMilkData = async () => {
+    try {
+      if (!selectedMilk || !selectedOption) {
+        alert("Please select a user and milk type before fetching data");
+        return;
+      }
 
-    const queryParams = new URLSearchParams({
-      registerNo: selectedOption,
-      session: currentTime,
-      milk: selectedMilk,
-      date: currentDate,
-    }).toString();
+      const queryParams = new URLSearchParams({
+        registerNo: selectedOption,
+        session: currentTime,
+        milk: selectedMilk,
+        date: currentDate,
+      }).toString();
 
-    const redisRes = await axios.get(`/api/milk/GetMilkvalue?${queryParams}`);
-    if (redisRes.data.data) {
-      const milkRecord = redisRes.data.data;
-      toast.success("दूध डेटा प्राप्त किया गया है");
+      const redisRes = await axios.get(`/api/milk/GetMilkvalue?${queryParams}`);
+      if (redisRes.data.data) {
+        const milkRecord = redisRes.data.data;
+        toast.success("दूध डेटा प्राप्त किया गया है");
 
-      inputRefs.current[1].value = milkRecord.liter;
-      inputRefs.current[2].value = milkRecord.fat;
-      inputRefs.current[3].value = milkRecord.snf;
-      inputRefs.current[4].value = milkRecord.dar;
-      inputRefs.current[5].value = milkRecord.rakkam;
-    } else {
-      toast.info("No milk data found, please submit");
-    }
-  } catch (error) {
-    toast.error("Error fetching milk data:", error.message);
-  }
-};
-
-const handleSubmit = async () => {
-  try {
-    if (!selectedMilk) {
-      alert("Please select a milk type before submitting");
-      return;
-    }
-
-    const liter = parseFloat(inputRefs.current[1]?.value || "0");
-    const fat = parseFloat(inputRefs.current[2]?.value || "0");
-    const snf = parseFloat(inputRefs.current[3]?.value || "0");
-    const dar = parseFloat(inputRefs.current[4]?.value || "0");
-    const rakkam = parseFloat(inputRefs.current[5]?.value || "0");
-
-    if (isNaN(liter) || isNaN(fat) || isNaN(snf) || isNaN(dar) || isNaN(rakkam)) {
-      alert("Please enter valid numbers before submitting");
-      return;
-    }
-
-    const payload = {
-      registerNo: selectedOption,
-      session: currentTime,
-      milk: selectedMilk,
-      liter,
-      fat,
-      snf,
-      dar,
-      rakkam,
-      date: currentDate,
-    };
-
-    const res = await axios.post("/api/milk/createMilk", payload);
-    toast.success(res.data.message);
-
-    if (res.data.alert) {
-      // ✅ If milk record exists, update input fields and prevent clearing
-      toast.success(res.data.alert);
-      if (res.data.data) {
-        const milkRecord = res.data.data;
         inputRefs.current[1].value = milkRecord.liter;
         inputRefs.current[2].value = milkRecord.fat;
         inputRefs.current[3].value = milkRecord.snf;
         inputRefs.current[4].value = milkRecord.dar;
         inputRefs.current[5].value = milkRecord.rakkam;
+      } else {
+        toast.info("No milk data found, please submit");
       }
-    } else {
-      // ✅ Only clear form if no previous record exists
-      setTimeout(() => {
-        clearForm(true, res.data.alert); // Pass hasPreviousData flag
-        input1Ref.current.focus();
-      }, 1000);
+    } catch (error) {
+      toast.error("Error fetching milk data:", error.message);
     }
-  } catch (error) {
-    toast.error("Error storing milk information:", error.message);
-  }
-};
+  };
+
+  const handleSubmit = async () => {
+    try {
+      if (!selectedMilk) {
+        alert("Please select a milk type before submitting");
+        return;
+      }
+
+      const liter = parseFloat(inputRefs.current[1]?.value || "0");
+      const fat = parseFloat(inputRefs.current[2]?.value || "0");
+      const snf = parseFloat(inputRefs.current[3]?.value || "0");
+      const dar = parseFloat(inputRefs.current[4]?.value || "0");
+      const rakkam = parseFloat(inputRefs.current[5]?.value || "0");
+
+      if (isNaN(liter) || isNaN(fat) || isNaN(snf) || isNaN(dar) || isNaN(rakkam)) {
+        alert("Please enter valid numbers before submitting");
+        return;
+      }
+
+      const payload = {
+        registerNo: selectedOption,
+        session: currentTime,
+        milk: selectedMilk,
+        liter,
+        fat,
+        snf,
+        dar,
+        rakkam,
+        date: currentDate,
+      };
+
+      const res = await axios.post("/api/milk/createMilk", payload);
+      toast.success(res.data.message);
+
+      if (res.data.alert) {
+        // ✅ If milk record exists, update input fields and prevent clearing
+        toast.success(res.data.alert);
+        if (res.data.data) {
+          const milkRecord = res.data.data;
+          inputRefs.current[1].value = milkRecord.liter;
+          inputRefs.current[2].value = milkRecord.fat;
+          inputRefs.current[3].value = milkRecord.snf;
+          inputRefs.current[4].value = milkRecord.dar;
+          inputRefs.current[5].value = milkRecord.rakkam;
+        }
+      } else {
+        // ✅ Only clear form if no previous record exists
+        setTimeout(() => {
+          clearForm(true, res.data.alert); // Pass hasPreviousData flag
+          input1Ref.current.focus();
+        }, 1000);
+      }
+    } catch (error) {
+      toast.error("Error storing milk information:", error.message);
+    }
+  };
 
 
   const handleUpdate = async () => {
@@ -782,45 +754,45 @@ const handleSubmit = async () => {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           {/* Date Selection */}
           <div className="ml-4 rounded-lg flex flex-row">
-                    <label className="flex items-center cursor-pointer space-x-2">
-                      <span className="relative">
-                        <input
-                          type="checkbox"
-                          className="sr-only peer"
-                          checked={autoFill}
-                          onChange={handleAutoFillChange}
-                        />
-                        <div className="w-10 h-6 bg-gray-300 rounded-full peer-focus:ring-2 peer-focus:ring-blue-500 peer-checked:bg-blue-800 transition-all"></div>
-                        <div className="w-4 h-4 bg-white rounded-full shadow-md transform peer-checked:translate-x-4 transition-all absolute top-1 left-1"></div>
-                      </span>
-                      <span className="text-white bg-gradient-to-r from-blue-500 via-purple-600 to-pink-500 bg-blue-400 border rounded-md p-1 text-sm">
-                        मागील
-                      </span>
-                    </label>
+            <label className="flex items-center cursor-pointer space-x-2">
+              <span className="relative">
+                <input
+                  type="checkbox"
+                  className="sr-only peer"
+                  checked={autoFill}
+                  onChange={handleAutoFillChange}
+                />
+                <div className="w-10 h-6 bg-gray-300 rounded-full peer-focus:ring-2 peer-focus:ring-blue-500 peer-checked:bg-blue-800 transition-all"></div>
+                <div className="w-4 h-4 bg-white rounded-full shadow-md transform peer-checked:translate-x-4 transition-all absolute top-1 left-1"></div>
+              </span>
+              <span className="text-white bg-gradient-to-r from-blue-500 via-purple-600 to-pink-500 bg-blue-400 border rounded-md p-1 text-sm">
+                मागील
+              </span>
+            </label>
 
-                    {/* "Fix SNF" checkbox */}
-                    <label className="flex ml-4 items-center cursor-pointer space-x-2">
-                      <span className="relative">
-                        <input
-                          type="checkbox"
-                          className="sr-only peer"
-                          checked={useDefault}
-                          onChange={handleCheckboxChange}
-                        />
-                        <div className="w-10 h-6 bg-gray-300 rounded-full peer-focus:ring-2 peer-focus:ring-blue-500 peer-checked:bg-blue-800 transition-all"></div>
-                        <div className="w-4 h-4 bg-white rounded-full shadow-md transform peer-checked:translate-x-4 transition-all absolute top-1 left-1"></div>
-                      </span>
-                      <span className="text-white bg-gradient-to-r from-blue-500 via-purple-600 to-pink-500 bg-blue-400 border rounded-md p-1 text-sm">
-                        फिक्स
-                      </span>
-                    </label>
-                    <button
-          className="text-white ml-4 py-1 px-3 rounded text-sm hover:bg-gray-800 hover:text-white transition duration-300 border-b-2 hover:border-b-2 hover:border-blue-500 border-gray-300"
-          onClick={handlePageRefresh}
-        >
-          <i className="fas fa-sync-alt"></i> {/* Font Awesome Refresh Icon */}
-        </button>
-                    </div>
+            {/* "Fix SNF" checkbox */}
+            <label className="flex ml-4 items-center cursor-pointer space-x-2">
+              <span className="relative">
+                <input
+                  type="checkbox"
+                  className="sr-only peer"
+                  checked={useDefault}
+                  onChange={handleCheckboxChange}
+                />
+                <div className="w-10 h-6 bg-gray-300 rounded-full peer-focus:ring-2 peer-focus:ring-blue-500 peer-checked:bg-blue-800 transition-all"></div>
+                <div className="w-4 h-4 bg-white rounded-full shadow-md transform peer-checked:translate-x-4 transition-all absolute top-1 left-1"></div>
+              </span>
+              <span className="text-white bg-gradient-to-r from-blue-500 via-purple-600 to-pink-500 bg-blue-400 border rounded-md p-1 text-sm">
+                फिक्स
+              </span>
+            </label>
+            <button
+              className="text-white ml-4 py-1 px-3 rounded text-sm hover:bg-gray-800 hover:text-white transition duration-300 border-b-2 hover:border-b-2 hover:border-blue-500 border-gray-300"
+              onClick={handlePageRefresh}
+            >
+              <i className="fas fa-sync-alt"></i> {/* Font Awesome Refresh Icon */}
+            </button>
+          </div>
           <div className="flex flex-row">
             <input
               type="date"
@@ -1011,63 +983,63 @@ const handleSubmit = async () => {
           न आलेले उत्पादक
         </button>
         <Link href="/home/SessionMilk">
-                      <button
-                          className="w-24 md:w-36 py-2 ml-4 bg-green-400 border rounded-md p-1 text-gray-700 text-sm mt-4 mb-2"
-                          value={currentTime}
-                      >
-                          {currentTime === "morning" ? (
-                              <span>सकाळचे दूध</span>
-                          ) : (
-                              <span>संध्याकाळचे दूध</span>
-                          )}
-                      </button>
-                  </Link>
+          <button
+            className="w-24 md:w-36 py-2 ml-4 bg-green-400 border rounded-md p-1 text-gray-700 text-sm mt-4 mb-2"
+            value={currentTime}
+          >
+            {currentTime === "morning" ? (
+              <span>सकाळचे दूध</span>
+            ) : (
+              <span>संध्याकाळचे दूध</span>
+            )}
+          </button>
+        </Link>
 
 
-                  {isModalOpen && (
-                    <div className="text-black fixed inset-0 flex items-center justify-center bg-gray-500 bg-opacity-50 z-10 mt-12 rounded-md">
-                      <div className="bg-white text-black p-6 rounded-lg shadow-lg w-3/4 md:w-1/2 relative max-h-[600px] overflow-y-auto">
-                        <h2 className="text-xl text-black font-semibold mb-4">
-                          न आलेले उत्पादक{" "}
-                        </h2>
+        {isModalOpen && (
+          <div className="text-black fixed inset-0 flex items-center justify-center bg-gray-500 bg-opacity-50 z-10 mt-12 rounded-md">
+            <div className="bg-white text-black p-6 rounded-lg shadow-lg w-3/4 md:w-1/2 relative max-h-[600px] overflow-y-auto">
+              <h2 className="text-xl text-black font-semibold mb-4">
+                न आलेले उत्पादक{" "}
+              </h2>
 
-                        {/* Cross button */}
-                        <button
-                          onClick={toggleModal}
-                          className="text-black absolute top-2 right-2 hover:text-black text-2xl font-bold"
-                        >
-                          &times;
-                        </button>
+              {/* Cross button */}
+              <button
+                onClick={toggleModal}
+                className="text-black absolute top-2 right-2 hover:text-black text-2xl font-bold"
+              >
+                &times;
+              </button>
 
-                        <table className="table-auto w-full border-collapse text-black">
-                          <thead>
-                            <tr className="bg-gray-400">
-                              <th className="border-b px-4 py-2 text-left text-black">
-                                रजीस्टर नं{" "}
-                              </th>
-                              <th className="border-b px-4 py-2 text-left text-black">
-                                उत्पादकाचे नाव{" "}
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {susers
-                              .filter(user => user.status === "active") // Only include active users
-                              .map(user => (
-                                <tr key={user._id}>
-                                  <td className="border-b px-4 py-2 text-black">
-                                    {user.registerNo}
-                                  </td>
-                                  <td className="border-b px-4 py-2 text-black">
-                                    {user.name}
-                                  </td>
-                                </tr>
-                              ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  )}
+              <table className="table-auto w-full border-collapse text-black">
+                <thead>
+                  <tr className="bg-gray-400">
+                    <th className="border-b px-4 py-2 text-left text-black">
+                      रजीस्टर नं{" "}
+                    </th>
+                    <th className="border-b px-4 py-2 text-left text-black">
+                      उत्पादकाचे नाव{" "}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {susers
+                    .filter(user => user.status === "active") // Only include active users
+                    .map(user => (
+                      <tr key={user._id}>
+                        <td className="border-b px-4 py-2 text-black">
+                          {user.registerNo}
+                        </td>
+                        <td className="border-b px-4 py-2 text-black">
+                          {user.name}
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
         <ToastContainer />
       </div>
     </>

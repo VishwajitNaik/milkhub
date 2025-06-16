@@ -42,7 +42,11 @@ const sanghSchema = new mongoose.Schema({
         ref: 'OnwerKapat',
         default: [],
     }],
-    
+    VisitTypes: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'VisitType',
+        default: [],
+    }],
     isAdmin: {
         type: Boolean,
         default: true,

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-const AcceptedOrders = () => {
+const CompletedOrders = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [dairies, setDairies] = useState([]);
@@ -13,7 +13,8 @@ const AcceptedOrders = () => {
         const fetchOrders = async () => {
             try {
                 const response = await axios.get("/api/sangh/AllOrders");
-                setDairies(response.data.data);
+                const orders = response.data.data?.orders || [];
+                setDairies(orders);
                 setLoading(false);
             } catch (error) {
                 console.error("Error fetching orders:", error.message);
@@ -27,66 +28,73 @@ const AcceptedOrders = () => {
     const groupedOrders = dairies.reduce((acc, order) => {
         const { dairyName, orderType, quantity, _id, status, rate, createdAt, truckNo, driverMobNo } = order;
         if (!acc[dairyName]) acc[dairyName] = { orders: [], dairyName };
-
-        // Group orders by status for easy categorization
         acc[dairyName].orders.push({ orderType, quantity, _id, status, rate, createdAt, truckNo, driverMobNo });
         return acc;
     }, {});
 
-    return (
-        <div>
-        <h1 className="text-3xl font-bold mb-8 text-gray-700">Completed Orders</h1>
+    if (loading) return <div className="text-center py-10">Loading...</div>;
+    if (error) return <div className="text-center text-red-600">{error}</div>;
 
-        {Object.values(groupedOrders).map((dairy) => (
-            <div
-                key={dairy.dairyName}
-                className={`bg-white shadow-lg rounded-lg p-6 w-full mb-4 cursor-pointer ${
-                    expandedDairy === dairy.dairyName ? "border-2 border-green-500" : ""
-                }`}
-                onClick={() => setExpandedDairy(dairy.dairyName)}
-            >
-                <h2 className="text-xl font-semibold text-gray-800">{dairy.dairyName}</h2>
-                <div className="flex flex-col w-full">
-                    {expandedDairy === dairy.dairyName && (
-                        <div className="mt-4">
-                            <h3 className="font-bold text-green-600">Completed Orders</h3>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
-                                {dairy.orders
-                                    .filter((order) => order.status === "Completed")
-                                    .map((order) => (
-                                        <OrderComponent
-                                            key={order._id}
-                                            order={order}
-                                        />
-                                    ))}
-                            </div>
-                        </div>
-                    )}
-                </div>
+    return (
+        <div className="min-h-screen p-6 bg-gray-100 gradient-bg">
+            <h1 className="text-3xl font-bold mb-8 text-gray-700">Completed Orders</h1>
+
+            {/* Horizontal Button Row */}
+            <div className="flex overflow-x-auto space-x-4 mb-6 pb-2">
+                {Object.values(groupedOrders).map((dairy) => {
+                    const completedCount = dairy.orders.filter(o => o.status === "Completed").length;
+                    return (
+                        <button
+                            key={dairy.dairyName}
+                            className={`relative whitespace-nowrap px-6 py-3 mt-10 rounded-lg font-semibold transition ${
+                                expandedDairy === dairy.dairyName
+                                    ? "bg-green-500 text-white"
+                                    : "bg-white text-gray-800 hover:bg-gray-200"
+                            }`}
+                            onClick={() => setExpandedDairy(dairy.dairyName)}
+                        >
+                            {dairy.dairyName}
+                            {completedCount > 0 && (
+                                <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                                    {completedCount}
+                                </span>
+                            )}
+                        </button>
+                    );
+                })}
             </div>
-        ))}
+
+            {/* Orders Card Row */}
+            {expandedDairy && groupedOrders[expandedDairy] && (
+                <div className="w-full bg-white p-6 rounded-xl shadow-lg">
+                    <h2 className="text-xl font-bold text-gray-800 mb-4">
+                        {expandedDairy} - Completed Orders
+                    </h2>
+                    <div className="flex flex-row overflow-x-auto space-x-4">
+                        {groupedOrders[expandedDairy].orders
+                            .filter((order) => order.status === "Completed")
+                            .map((order) => (
+                                <OrderCard key={order._id} order={order} />
+                            ))}
+                    </div>
+                </div>
+            )}
         </div>
     );
+};
 
-}
-
-const OrderComponent = ({ order, onAccept, onSend, calculateProgress }) => (
-    <div className="p-5 bg-gradient-to-br from-blue-200 to-blue-300 rounded-2xl shadow-md transition-all duration-300 transform hover:scale-105 hover:shadow-xl">
+const OrderCard = ({ order }) => (
+    <div className="min-w-[280px] p-5 bg-gradient-to-br from-blue-100 to-blue-300 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 transform hover:scale-105">
         <p className="text-gray-800 font-semibold mb-1">
             📅 <span className="font-medium">Date:</span> {new Date(order.createdAt).toLocaleDateString()}
         </p>
-        <p className="text-gray-900 font-bold text-lg mb-1">
-            📦 Order Type: {order.orderType}
-        </p>
+        <p className="text-gray-900 font-bold text-lg mb-1">📦 {order.orderType}</p>
         <p className="text-gray-800 mb-1">🔢 Quantity: {order.quantity}</p>
-        <p className="text-gray-800 mb-1">💰 Total Amount: ₹{order.rate}</p>
+        <p className="text-gray-800 mb-1">💰 Amount: ₹{order.rate}</p>
         <p className="text-gray-800 mb-1">🚛 Truck No: {order.truckNo}</p>
-        <p className="text-gray-800 mb-1">📱 Driver Mobile: {order.driverMobNo}</p>
-        <p className="text-green-700 font-medium mt-2">
-            ✅ Status: {order.status}
-        </p>
+        <p className="text-gray-800 mb-1">📱 Driver: {order.driverMobNo}</p>
+        <p className="text-green-700 font-semibold mt-2">✅ {order.status}</p>
     </div>
 );
 
-
-export default AcceptedOrders;
+export default CompletedOrders;

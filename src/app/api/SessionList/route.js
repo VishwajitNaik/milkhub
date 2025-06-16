@@ -2,9 +2,8 @@ import { getDataFromToken } from "../../../helpers/getDataFromToken";
 import { NextResponse } from "next/server";
 import { connect } from "@/dbconfig/dbconfig";
 import Owner from "@/models/ownerModel";
-import Milk from "@/models/MilkModel"; // Assuming you have a Milk model to query milk records
+import Milk from "@/models/MilkModel";
 
-// Connect to the database
 connect();
 
 export async function GET(request) {
@@ -15,35 +14,49 @@ export async function GET(request) {
             return NextResponse.json({ error: "Owner ID not found in token" }, { status: 400 });
         }
 
-        // Find the owner by ID and populate the 'users' field
+        // Find the owner and their users
         const owner = await Owner.findById(ownerId).populate('users');
         if (!owner) {
             return NextResponse.json({ error: "Owner not found" }, { status: 404 });
         }
 
-        // Adjust time for AWS timezone issues
-        const isProduction = process.env.NODE_ENV === "production";
+        // Use server's local time
+        const now = new Date();
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
 
-        const today = new Date();
-        const startOfDay = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate(), 0, 0, 0));
-        const endOfDay = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate(), 23, 59, 59));
+        // Determine the session
+        let currentSession = null;
 
-        // Determine session based on UTC time
-        const currentHour = today.getUTCHours(); // Use UTC time to avoid AWS time differences
-        const currentSession = currentHour < 12 ? "morning" : "evening";
+        if (currentHour >= 6 && currentHour < 12) {
+            currentSession = "morning";
+        } else if (currentHour >= 13 && currentHour < 21) {
+            currentSession = "evening";
+        } else {
+            return NextResponse.json(
+                { error: "Milk can only be taken between 6AM–12PM (Morning) or 1PM–9PM (Evening)." },
+                { status: 403 }
+            );
+        }
 
-        // Get all milk records for today and current session
+        // Create today's date range
+        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+        const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+
+        // Find all milk records for today and session
         const allMilkRecords = await Milk.find({
             createdBy: { $in: owner.users.map(user => user._id) },
             date: { $gte: startOfDay, $lte: endOfDay },
             session: currentSession
         });
 
-        // Create a Set of user IDs who have already taken milk
+        // Get user IDs who already took milk
         const takenMilkUserIds = new Set(allMilkRecords.map(record => record.createdBy.toString()));
 
-        // Filter users who have NOT taken milk
-        const filteredUsers = owner.users.filter(user => !takenMilkUserIds.has(user._id.toString()));
+        // Filter users who have not taken milk
+        const filteredUsers = owner.users
+            .filter(user => !takenMilkUserIds.has(user._id.toString()))
+            .sort((a, b) => a.registerNo - b.registerNo); // Sort by registerNo ascending
 
         return NextResponse.json({ data: filteredUsers }, { status: 200 });
 

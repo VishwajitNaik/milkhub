@@ -4,6 +4,7 @@ import BillKapat from "@/models/BillKapat";
 import Sthirkapat from '@/models/sthirkapat';
 import Owner from '@/models/ownerModel';
 import { NextResponse } from "next/server";
+import Visits from "@/models/GetDocterVisit";
 import { getDataFromToken } from "../../../../helpers/getDataFromToken";
 
 export async function POST(request) {
@@ -31,7 +32,7 @@ export async function POST(request) {
       });
 
       const totalLiters = milkRecords.reduce((total, record) => total + record.liter, 0).toFixed(1);
-      
+
       const totalBuffLiter = milkRecords.filter(record => record.milk === "म्हैस ").reduce((total, record) => total + record.liter, 0);
       const totalCowLiter = milkRecords.filter(record => record.milk === "गाय ").reduce((total, record) => total + record.liter, 0);
       const totalRakkam = milkRecords.reduce((total, record) => total + record.rakkam, 0).toFixed(1);
@@ -50,7 +51,27 @@ export async function POST(request) {
       const totalBuffBillKapat = billKapatRecords.filter(record => record.milktype === "म्हैस ").reduce((total, record) => total + record.rate, 0);
       const totalCowBillKapat = billKapatRecords.filter(record => record.milktype === "गाय ").reduce((total, record) => total + record.rate, 0);
 
-      const netPayment = (totalRakkam - totalKapatRateMultiplybyTotalLiter - totalBillKapat).toFixed(1);
+      const VisitsRecords = await Visits.find({
+        createdBy: ownerId,
+        username: user.name,
+        AnimalType: { $in: milkRecords.map(m => m.milk) },
+        status: "completed",
+        date: { $gte: new Date(startDate), $lte: new Date(endDate) }
+      });
+
+      const VisitFee = await Visits.find({
+        createdBy: ownerId,
+        status: "completed",
+        date: { $gte: new Date(startDate), $lte: new Date(endDate) }
+      })
+      console.log("VisitFee", VisitFee);
+
+      const totalVisitFee = VisitFee.reduce((total, visit) => total + (visit.visitRate || 0), 0).toFixed(1);
+
+      const totalVisitEarnings = VisitsRecords.reduce((sum, visit) => sum + (visit.visitRate || 0), 0);
+
+
+      const netPayment = (totalRakkam - totalKapatRateMultiplybyTotalLiter - totalBillKapat - totalVisitEarnings).toFixed(1);
 
       const totalKapat = (totalKapatRateMultiplybyTotalLiter + totalBillKapat).toFixed(1);
 
@@ -65,7 +86,9 @@ export async function POST(request) {
         totalCowRakkam,
         totalBuffBillKapat,
         totalCowBillKapat,
+        totalVisitEarnings,
         totalKapat,
+        totalVisitFee,
         totalRakkam,
         totalKapatRateMultiplybyTotalLiter,
         totalBillKapat,

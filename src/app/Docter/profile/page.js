@@ -200,15 +200,6 @@ const DrProfile = () => {
             </span>
           </div>
           
-          <div className="bg-blue-100 p-4 rounded-lg shadow-md flex items-center">
-            <strong className="bg-blue-200 text-gray-700 p-2 rounded-md mr-2">
-              Sangh:
-            </strong>
-            <span className="text-gray-800 text-lg font-medium">
-              {doctorData?.sangh || "Not specified"}
-            </span>
-          </div>
-          
           <div className="col-span-1 md:col-span-2 flex justify-center pt-4">
             <button
               onClick={() => setIsEditing(true)}

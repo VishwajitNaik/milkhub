@@ -46,10 +46,15 @@ export async function POST(request, { params }) {
                 diseasesOccurred: requestData.diseasesOccurred,
                 treatmentFollowed: requestData.treatmentFollowed,
                 medicinesUsed: requestData.medicinesUsed || [],
+                visitType: requestData.visitType,          // ✅ Add this
+                visitRate: requestData.visitRate, 
                 completedBy: doctorId
             },
             { new: true }
         );
+
+        console.log("Updated Visit:", updatedVisit);
+        
 
         return NextResponse.json({
             success: true,

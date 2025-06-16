@@ -101,7 +101,7 @@ const DrignIn = () => {
                                 name="phone"
                                 type="text"
                                 required
-                                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition duration-200"
+                                className="w-full px-4 py-3 text-black rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition duration-200"
                                 placeholder="Enter phone number"
                                 value={docter.phone}
                                 onChange={(e) => setDocter({ ...docter, phone: e.target.value })}

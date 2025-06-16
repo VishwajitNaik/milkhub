@@ -48,14 +48,19 @@ const animalDetailsSchema = new mongoose.Schema({
     },
     tagType: {
         type: String,
-        enum: ["ear", "rfid", "other"],
-        validate: {
-            validator: function (value) {
-                if (this.tagStatus === "tagged") return !!value;
-                return !value;
-            },
-            message: "tagType is required if tagStatus is 'tagged' and must be empty otherwise.",
-        }
+  validate: {
+    validator: function (value) {
+      const isTagged = this.tagStatus === "tagged";
+      const isUntaggedAndRequireTrue = this.tagStatus === "untagged" && this.require === true;
+
+      if (isTagged || isUntaggedAndRequireTrue) {
+        return !!value;
+      } else {
+        return !value;
+      }
+    },
+    message: "tagType is required if tagStatus is 'tagged' or tagStatus is 'untagged' and require is true. Otherwise, it must be empty.",
+  }
     },
     tagId: {
         type: String,
@@ -68,9 +73,17 @@ const animalDetailsSchema = new mongoose.Schema({
             message: "tagId is required if tagStatus is 'tagged' and must be empty otherwise.",
         }
     },
+    require:{
+        type: Boolean,
+        default: false,
+    },
     breed: {
         type: String,
         enum: ["sahiwal", "jersey", "holstein", "murrah", "kankrej", "desi", "other"],
+        required: true,
+    },
+    DOB: {
+        type: Date,
         required: true,
     },
     age: {

@@ -17,6 +17,10 @@ const AddDocterSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    center : {
+        type: String,
+        required: true,
+    },
     sangh: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Sangh',

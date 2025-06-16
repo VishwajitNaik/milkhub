@@ -6,6 +6,8 @@ import Image from 'next/image';
 import { useRouter } from "next/navigation";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import useUserStore from '@/app/store/useUserList';
+import useKapat from '@/app/store/useKapat';
 
 const AddBillKapat = () => {
   const [totalAmount, setTotalAmount] = useState(0);
@@ -16,20 +18,22 @@ const AddBillKapat = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedOptionOrder, setSelectedOptionOrder] = useState('');
   const [rakkam, setRakkam] = useState('');
-  const [users, setUsers] = useState([]);
+  // const [users, setUsers] = useState([]);
   const inputRefs = useRef([]);
   const [userDetails, setUserDetails] = useState(null);
   const [totalLiters, setTotalLiters] = useState(0);
-  const [totalRakkam, setTotalRakkam] = useState(0);
+  // const [totalRakkam, setTotalRakkam] = useState(0);
   const [netPayment, setNetPayment] = useState(0);
   const [literKapat, setLiterKapat] = useState(0);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [milkRecords, setMilkRecords] = useState([]);
-  const [kapat, setKapat] = useState([]);
+  // const [kapat, setKapat] = useState([]);
   const registerNoRef = useRef(null); // Create a ref for registerNo input field
   const [data, setData] = useState([]);
   const [total, setTotal] = useState(0);
+       const { users, loading, error, fetchUsers } = useUserStore();
+       const { kapat, totalRakkam, fetchKapat } = useKapat();
 
   // Fetch उच्चल data
   useEffect(() => {
@@ -51,36 +55,13 @@ const AddBillKapat = () => {
 
   // Fetch Kapat options and calculate totalRakkam
   useEffect(() => {
-    async function getKapatOptions() {
-      try {
-        const res = await axios.get('/api/kapat/getKapat');
-        const sthirKapat = res.data.data.filter(item => item.KapatType === 'Kapat');
-        setKapat(sthirKapat);
-
-        // Calculate totalRakkam for other options
-        const totalRakkam = sthirKapat.reduce((sum, item) => sum + (item.rakkam || 0), 0);
-        setTotalRakkam(totalRakkam);
-      } catch (error) {
-        console.log("Failed to fetch kapat options:", error.message);
-        toast.error("Failed to fetch kapat options.");
-      }
-    }
-    getKapatOptions();
-  }, [totalLiters, totalRakkam]);
+    fetchKapat();
+  }, [totalLiters]);
 
   // Fetch users
   useEffect(() => {
-    async function getOwnerUsers() {
-      try {
-        const res = await axios.get('/api/user/getUserList');
-        setUsers(res.data.data);
-      } catch (error) {
-        console.log("Failed to fetch users:", error.message);
-        toast.error("Failed to fetch users.");
-      }
-    }
-    getOwnerUsers();
-  }, []);
+    fetchUsers();
+  }, [fetchUsers]);
 
   // Set current date
   useEffect(() => {
@@ -366,7 +347,11 @@ const AddBillKapat = () => {
             <div className="flex items-center space-x-2">
               <span className="font-bold">बाकी</span>
               <span className="text-black h-fit text-xl font-mono p-2 mr-4 border-b-2 border-gray-600 w-36 bg-gray-200 rounded-md">
-                {selectedOptionOrder === "उच्चल" ? total.toFixed(2) : netPayment.toFixed(2)}
+                <span className="text-black h-fit text-xl font-mono p-2 mr-4 border-b-2 border-gray-600 w-36 bg-gray-200 rounded-md">
+  {selectedOptionOrder === "उच्चल"
+    ? (total ?? 0).toFixed(2)
+    : (netPayment ?? 0).toFixed(2)}
+</span>
               </span>
             </div>
           )}

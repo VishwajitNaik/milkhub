@@ -21,6 +21,12 @@ export async function POST(request) {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
         }
 
+        // Check if the product already exists
+        const existingProduct = await Product.findOne({ ProductName, createdBy: sanghId });
+        if (existingProduct) {
+            return NextResponse.json({ error: "Product already exists" }, { status: 400 });
+        }
+
         const newProduct = new Product({
             ProductName,
             ProductNo,

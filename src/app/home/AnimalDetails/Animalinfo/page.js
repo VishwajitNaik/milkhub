@@ -3,10 +3,12 @@ import { ToastContainer, toast as Toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css'; // Make sure to include the CSS
 import axios from 'axios';
 import React, { useState, useEffect, useRef } from 'react';
+import useUserStore from "@/app/store/useUserList.js"; // Import the user store
+import Link from 'next/link';
 
 const AnimalForm = () => {
   const [loading, setLoading] = useState(false);
-  const [users, setUsers] = useState([]);
+  // const [users, setUsers] = useState([]);
   const [currentDate, setCurrentDate] = useState('');
   const [selectedOption, setSelectedOption] = useState('');
   const [ownerData, setOwnerData] = useState(null);
@@ -16,6 +18,7 @@ const AnimalForm = () => {
   const inputRefs = useRef([]);
   const [tagTypes, setTagTypes] = useState([]);
   const registerNoRef = useRef(null);
+  const [lastChanged, setLastChanged] = useState(null); // 'DOB' or 'age'
   const [address, setAddress] = useState({
     village: '',
     tahasil: '',
@@ -33,13 +36,16 @@ const AnimalForm = () => {
     tagType: '',
     tagId: '',
     breed: '',
+    DOB: '',
     age: '',
     purpose: '',
     quantityOfMilk: '',
     runningMonth: '',
     healthStatus: 'healthy',
-    typeOfDisease: ''
+    typeOfDisease: '',
+    require: false,
   });
+  const { users, error, fetchUsers } = useUserStore();
 
 
   useEffect(() => {
@@ -51,7 +57,7 @@ const AnimalForm = () => {
         ]);
 
         setOwnerData(profileResponse.data.data);
-        
+
         // Set address if available
         if (addressResponse.data.data && addressResponse.data.data.length > 0) {
           setAddress({
@@ -69,40 +75,44 @@ const AnimalForm = () => {
     fetchData();
   }, []);
 
-        // Render the list of Tag Types
-        useEffect(() => {
-          async function fetchData() {
-              try {
-                  const res = await axios.get("/api/owner/GetTagType"); // Adjust the API endpoint as needed
-                  if (res.status === 200) {
-                      setTagTypes(res.data.data);
-                      console.log("Tag Types fetched successfully:", res.data.data);
-                      
-                  } else {
-                      setError("Failed to fetch Tag Types");
-                  }
-              } catch (error) {
-                  console.error("Error fetching Tag Types:", error);
-                  setError("Failed to fetch Tag Types");
-              }
-          }
-
-          fetchData();
-      }, []);
-
+  // Render the list of Tag Types
   useEffect(() => {
-    async function getOwnerUsers() {
+    async function fetchData() {
       try {
-        const res = await axios.get('/api/user/getUserList');
-        setUsers(res.data.data);
+        const res = await axios.get("/api/owner/GetTagType"); // Adjust the API endpoint as needed
+        if (res.status === 200) {
+          setTagTypes(res.data.data);
+          console.log("Tag Types fetched successfully:", res.data.data);
 
+        } else {
+          setError("Failed to fetch Tag Types");
+        }
       } catch (error) {
-        console.log("Failed to fetch users:", error.message);
-        toast.error("सर्वर डाउन आहे ");
+        console.error("Error fetching Tag Types:", error);
+        setError("Failed to fetch Tag Types");
       }
     }
-    getOwnerUsers();
+
+    fetchData();
   }, []);
+
+  // useEffect(() => {
+  //   async function getOwnerUsers() {
+  //     try {
+  //       const res = await axios.get('/api/user/getUserList');
+  //       setUsers(res.data.data);
+
+  //     } catch (error) {
+  //       console.log("Failed to fetch users:", error.message);
+  //       toast.error("सर्वर डाउन आहे ");
+  //     }
+  //   }
+  //   getOwnerUsers();
+  // }, []);
+
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
 
   useEffect(() => {
     const date = new Date();
@@ -146,7 +156,7 @@ const AnimalForm = () => {
 
     // Clear dependent fields when parent field changes
     if (name === 'tagStatus' && value === 'untagged') {
-      setFormData(prev => ({ ...prev, tagType: '', tagId: '' }));
+      setFormData(prev => ({ ...prev, tagId: '' }));
     }
     if (name === 'purpose' && value !== 'inMilk') {
       setFormData(prev => ({ ...prev, quantityOfMilk: '' }));
@@ -160,18 +170,19 @@ const AnimalForm = () => {
   };
 
   // Validation function
- const validate = () => {
+  const validate = () => {
     const newErrors = {};
 
     // Address validation
-    if (!address.village) newErrors.village = 'Village is required';
-    if (!address.tahasil) newErrors.tahasil = 'Tahasil is required';
-    if (!address.district) newErrors.district = 'District is required';
+    if (!address.village) newErrors.village = 'Village is ';
+    if (!address.tahasil) newErrors.tahasil = 'Tahasil is ';
+    if (!address.district) newErrors.district = 'District is ';
 
     // Existing validations
-    if (!formData.species) newErrors.species = 'Species is required';
-    if (!formData.animalGender) newErrors.animalGender = 'Gender is required';
+    if (!formData.species) newErrors.species = 'Species is ';
+    if (!formData.animalGender) newErrors.animalGender = 'Gender is ';
     if (!formData.breed) newErrors.breed = 'Breed is required';
+    if (!formData.DOB) newErrors.DOB = 'Date of Birth is required';
     if (!formData.age) newErrors.age = 'Age is required';
     if (!formData.purpose) newErrors.purpose = 'Purpose is required';
     if (!formData.healthStatus) newErrors.healthStatus = 'Health status is required';
@@ -180,6 +191,10 @@ const AnimalForm = () => {
     if (formData.tagStatus === 'tagged') {
       if (!formData.tagType) newErrors.tagType = 'Tag type is required for tagged animals';
       if (!formData.tagId) newErrors.tagId = 'Tag ID is required for tagged animals';
+    }
+
+    if (formData.tagStatus === 'untagged' && require === true) {
+      if (!formData.tagType) newErrors.tagType = 'Tag type is required';
     }
 
     if (formData.purpose === 'inMilk' && !formData.quantityOfMilk) {
@@ -194,9 +209,45 @@ const AnimalForm = () => {
       newErrors.typeOfDisease = 'Disease type is required for sick animals';
     }
 
+    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+
+  useEffect(() => {
+  if (lastChanged === "DOB" && formData.DOB) {
+    const dobDate = new Date(formData.DOB);
+    const today = new Date();
+    const months =
+      (today.getFullYear() - dobDate.getFullYear()) * 12 +
+      (today.getMonth() - dobDate.getMonth());
+
+    setFormData((prev) => ({
+      ...prev,
+      age: months >= 0 ? months : 0,
+    }));
+  }
+
+  if (lastChanged === "age" && formData.age) {
+    const months = parseInt(formData.age);
+    if (!isNaN(months) && months >= 0) {
+      const today = new Date();
+      const dobDate = new Date(
+        today.getFullYear(),
+        today.getMonth() - months,
+        today.getDate()
+      );
+      const isoDob = dobDate.toISOString().split("T")[0];
+
+      setFormData((prev) => ({
+        ...prev,
+        DOB: isoDob,
+      }));
+    }
+  }
+}, [formData.DOB, formData.age, lastChanged]);
+
 
 
   const handleSubmit = async (e) => {
@@ -213,7 +264,7 @@ const AnimalForm = () => {
         };
 
         const res = await axios.post('/api/AnimalDetails/animalifo', payload);
-        
+
         if (res.data.success) {
           Toast.success('Animal added successfully');
           // Reset form
@@ -224,12 +275,14 @@ const AnimalForm = () => {
             tagType: '',
             tagId: '',
             breed: '',
+            DOB: '',
             age: '',
             purpose: '',
             quantityOfMilk: '',
             runningMonth: '',
             healthStatus: 'healthy',
-            typeOfDisease: ''
+            typeOfDisease: '',
+            require: false,
           });
         } else {
           Toast.error(res.data.error || 'Failed to add animal');
@@ -240,7 +293,7 @@ const AnimalForm = () => {
       }
     }
   };
-  
+
   useEffect(() => {
     const fetchOwnerName = async () => {
       try {
@@ -305,50 +358,50 @@ const AnimalForm = () => {
             </div>
 
             <div className="flex flex-wrap md:space-x-4 mb-4">
-                      {/* Address Section */}
-        <div className="w-full flex flex-wrap">
-          <div className="w-full md:w-1/3 px-2 mb-4">
-            <label htmlFor="village" className="text-black">गाव</label>
-            <input
-              id="village"
-              name="village"
-              type="text"
-              value={address.village}
-              onChange={(e) => setAddress({...address, village: e.target.value})}
-              className="text-black p-2 border-b-2 border-gray-600 focus:border-blue-500 focus:outline-none w-full bg-gray-200 rounded-md"
-              required
-            />
-            {errors.village && <span className="text-red-500 text-sm">{errors.village}</span>}
-          </div>
+              {/* Address Section */}
+              <div className="w-full flex flex-wrap">
+                <div className="w-full md:w-1/3 px-2 mb-4">
+                  <label htmlFor="village" className="text-black">गाव</label>
+                  <input
+                    id="village"
+                    name="village"
+                    type="text"
+                    value={address.village}
+                    onChange={(e) => setAddress({ ...address, village: e.target.value })}
+                    className="text-black p-2 border-b-2 border-gray-600 focus:border-blue-500 focus:outline-none w-full bg-gray-200 rounded-md"
+                    required
+                  />
+                  {errors.village && <span className="text-red-500 text-sm">{errors.village}</span>}
+                </div>
 
-          <div className="w-full md:w-1/3 px-2 mb-4">
-            <label htmlFor="tahasil" className="text-black">तहसील</label>
-            <input
-              id="tahasil"
-              name="tahasil"
-              type="text"
-              value={address.tahasil}
-              onChange={(e) => setAddress({...address, tahasil: e.target.value})}
-              className="text-black p-2 border-b-2 border-gray-600 focus:border-blue-500 focus:outline-none w-full bg-gray-200 rounded-md"
-              required
-            />
-            {errors.tahasil && <span className="text-red-500 text-sm">{errors.tahasil}</span>}
-          </div>
+                <div className="w-full md:w-1/3 px-2 mb-4">
+                  <label htmlFor="tahasil" className="text-black">तहसील</label>
+                  <input
+                    id="tahasil"
+                    name="tahasil"
+                    type="text"
+                    value={address.tahasil}
+                    onChange={(e) => setAddress({ ...address, tahasil: e.target.value })}
+                    className="text-black p-2 border-b-2 border-gray-600 focus:border-blue-500 focus:outline-none w-full bg-gray-200 rounded-md"
+                    required
+                  />
+                  {errors.tahasil && <span className="text-red-500 text-sm">{errors.tahasil}</span>}
+                </div>
 
-          <div className="w-full md:w-1/3 px-2 mb-4">
-            <label htmlFor="district" className="text-black">जिल्हा</label>
-            <input
-              id="district"
-              name="district"
-              type="text"
-              value={address.district}
-              onChange={(e) => setAddress({...address, district: e.target.value})}
-              className="text-black p-2 border-b-2 border-gray-600 focus:border-blue-500 focus:outline-none w-full bg-gray-200 rounded-md"
-              required
-            />
-            {errors.district && <span className="text-red-500 text-sm">{errors.district}</span>}
-          </div>
-        </div>
+                <div className="w-full md:w-1/3 px-2 mb-4">
+                  <label htmlFor="district" className="text-black">जिल्हा</label>
+                  <input
+                    id="district"
+                    name="district"
+                    type="text"
+                    value={address.district}
+                    onChange={(e) => setAddress({ ...address, district: e.target.value })}
+                    className="text-black p-2 border-b-2 border-gray-600 focus:border-blue-500 focus:outline-none w-full bg-gray-200 rounded-md"
+                    required
+                  />
+                  {errors.district && <span className="text-red-500 text-sm">{errors.district}</span>}
+                </div>
+              </div>
               <div className="flex flex-col mb-4 w-full md:w-1/6">
                 <input
                   type="number"
@@ -454,7 +507,6 @@ const AnimalForm = () => {
                 <option value="untagged">टॅग न केलेले</option>
               </select>
             </div>
-
             {/* Tag Type (conditional) */}
             {formData.tagStatus === 'tagged' && (
               <div className="w-full md:w-1/2 px-2 mb-4">
@@ -516,18 +568,42 @@ const AnimalForm = () => {
               {errors.breed && <span className="text-red-500 text-sm">{errors.breed}</span>}
             </div>
 
+            {/* Date of Birth */}
+            <div className="w-full md:w-1/2 px-2 mb-4">
+              <label htmlFor="DOB" className="text-black">जन्म तारीख</label>
+<input
+  id="DOB"
+  type="date"
+  name="DOB"
+  value={formData.DOB}
+  onChange={(e) => {
+    const dob = e.target.value;
+    setFormData({ ...formData, DOB: dob });
+    setLastChanged("DOB");
+  }}
+  className="text-black p-2 border-b-2 border-gray-600 focus:border-blue-500 focus:outline-none w-full bg-gray-200 rounded-md"
+  max={currentDate}
+  required
+/>
+              {errors.DOB && <span className="text-red-500 text-sm">{errors.DOB}</span>}
+            </div>
+
             {/* Age */}
             <div className="w-full md:w-1/2 px-2 mb-4">
               <label htmlFor="age" className="text-black">वय (महिने)</label>
-              <input
-                id="age"
-                type="number"
-                name="age"
-                value={formData.age}
-                onChange={(e) => setFormData({ ...formData, age: e.target.value })}
-                className="text-black p-2 border-b-2 border-gray-600 focus:border-blue-500 focus:outline-none w-full bg-gray-200 rounded-md"
-                required
-              />
+<input
+  id="age"
+  type="number"
+  name="age"
+  value={formData.age}
+  onChange={(e) => {
+    const age = e.target.value;
+    setFormData({ ...formData, age });
+    setLastChanged("age");
+  }}
+  className="text-black p-2 border-b-2 border-gray-600 focus:border-blue-500 focus:outline-none w-full bg-gray-200 rounded-md"
+  required
+/>
               {errors.age && <span className="text-red-500 text-sm">{errors.age}</span>}
             </div>
 
@@ -618,6 +694,44 @@ const AnimalForm = () => {
               </div>
             )}
 
+            {/* Tag Type (conditional) for untagged animals */}
+            {formData.tagStatus === 'untagged' && (
+              <div className="w-full px-2 mb-4">
+                <label>
+                  <input
+                    type="checkbox"
+                    name="require"
+                    checked={formData.require}
+                    onChange={(e) =>
+                      setFormData({ ...formData, require: e.target.checked })}
+                    className='w-4 h-4 m-2'
+                  />
+                  तुम्हाला टॅग सेवा हवी असेल तर समोरील बॉक्सवर क्लिक करून टॅगचा प्रकार निवडा. <Link href="/home/AllDairies/OwnerMilks"> <span className='text-blue-500'> टॅग संबंधित विस्तारित माहिती जाणून घ्या.</span></Link>
+                </label>
+
+              </div>)}
+
+            {formData.tagStatus === 'untagged' && (
+              <div className="w-full md:w-1/2 px-2 mb-4">
+                <label htmlFor="tagType" className="text-black">टॅग प्रकार</label>
+                <select
+                  id="tagType"
+                  name="tagType"
+                  value={formData.tagType}
+                  onChange={(e) => setFormData({ ...formData, tagType: e.target.value })}
+                  className="text-black p-2 border-b-2 border-gray-600 focus:border-blue-500 focus:outline-none w-full bg-gray-200 rounded-md"
+                >
+                  <option value="">Select Tag Type</option>
+                  {tagTypes.map((tagType) => (
+                    <option key={tagType._id} value={tagType.TagType}>
+                      {tagType.TagType}
+                    </option>
+                  ))}
+                </select>
+                {errors.tagType && <span className="text-red-500 text-sm">{errors.tagType}</span>}
+              </div>
+            )}
+
             {/* Submit Button */}
             <div className="w-full px-2">
               <div className="flex justify-center items-center mt-4">
@@ -631,11 +745,13 @@ const AnimalForm = () => {
               </div>
             </div>
 
+
             {/* Toast Notifications */}
-            <ToastContainer />
+
           </form>
         </div>
       </div>
+      <ToastContainer />
     </div>
   );
 };

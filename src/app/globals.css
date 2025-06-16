@@ -1,6 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
 
 :root {
   --foreground-rgb: 0, 0, 0;
@@ -58,6 +56,12 @@
 }
 
 
+input{
+  background-color: #ffffff;
+}
+
+
+
 body {
   position: relative;
   z-index: 0; /* Base z-index for the stacking context */
@@ -80,6 +84,10 @@ body {
 .faq-section {
   max-width: 00px;
   margin: auto;
+}
+
+select{
+  background-color: #ffffff;
 }
 
 .faq-item {

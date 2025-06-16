@@ -16,7 +16,8 @@ const DisplayDairiesWithOrders = () => {
         const fetchDairies = async () => {
             try {
                 const response = await axios.get("/api/sangh/AllOrders");
-                setDairies(response.data.data);
+                const orders = response.data.data?.orders || [];
+                setDairies(orders);
                 setLoading(false);
             } catch (error) {
                 console.error("Error fetching dairies and orders:", error.message);
@@ -34,13 +35,12 @@ const DisplayDairiesWithOrders = () => {
 
     const handleModalSubmit = async ({ truckNo, driverMobNo }) => {
         try {
-            // Update order details and status
             await axios.post("/api/sangh/orderAcptStatus", {
                 orderId: selectedOrderId,
                 truckNo,
                 driverMobNo,
             });
-            await handleOrderAccept(selectedOrderId); // Call accept logic
+            await handleOrderAccept(selectedOrderId);
             alert("Order details sent and accepted successfully!");
             setIsModalOpen(false);
         } catch (error) {
@@ -85,7 +85,6 @@ const DisplayDairiesWithOrders = () => {
         const { dairyName, orderType, quantity, _id, status, rate, createdAt } = order;
         if (!acc[dairyName]) acc[dairyName] = { orders: [], dairyName };
 
-        // Group orders by status for easy categorization
         acc[dairyName].orders.push({ orderType, quantity, _id, status, rate, createdAt });
         return acc;
     }, {});
@@ -94,51 +93,74 @@ const DisplayDairiesWithOrders = () => {
     if (error) return <div className="text-center text-red-500">{error}</div>;
 
     return (
-        <div className="flex flex-col w-full items-center min-h-screen bg-gray-300 p-4">
+        <div className="flex flex-col w-full items-center min-h-screen bg-gray-300 p-4 gradient-bg">
             <h1 className="text-3xl font-bold mb-8 text-gray-700">Dairies and Their Orders</h1>
-            <div className="flex flex-row w-full justify-center space-x-4">
-            <Link href="/home/AllDairies/Orders/AcceptedOrders">
-            <button className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded mb-4">
-                check accepted orders
-            </button>
-            </Link>
-            <Link href="/home/AllDairies/Orders/CompletedOrders">
-            <button className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded mb-4">
-                check Completed orders
-            </button>
-            </Link>
+            <div className="flex flex-row w-full justify-center space-x-4 mb-6">
+                <Link href="/home/AllDairies/Orders/AcceptedOrders">
+                    <button className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
+                        Check Accepted Orders
+                    </button>
+                </Link>
+                <Link href="/home/AllDairies/Orders/CompletedOrders">
+                    <button className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
+                        Check Completed Orders
+                    </button>
+                </Link>
             </div>
-            {Object.values(groupedOrders).map((dairy) => (
-                <div
-                    key={dairy.dairyName}
-                    className={`bg-white shadow-lg rounded-lg p-6 w-full mb-4 cursor-pointer ${
-                        expandedDairy === dairy.dairyName ? "border-2 border-green-500" : ""
-                    }`}
-                    onClick={() => setExpandedDairy(dairy.dairyName)}
-                >
-                    <h2 className="text-xl font-semibold text-gray-800">{dairy.dairyName}</h2>
-                    <div className="flex flex-col w-full">
-                        {expandedDairy === dairy.dairyName && (
-                            <div className="mt-4">
-                                <h3 className="font-bold text-green-600">Pending Orders</h3>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
-                                    {dairy.orders
-                                        .filter((order) => order.status === "Pending")
-                                        .map((order) => (
-                                            <OrderComponent
-                                                key={order._id}
-                                                order={order}
-                                                onAccept={handleOrderAccept}
-                                                onSend={handleSendButtonClick}
-                                                calculateProgress={calculateProgress}
-                                            />
-                                        ))}
-                                </div>
-                            </div>
-                        )}
+            
+            {/* Dairy Names in Horizontal Row */}
+{/* Dairy Names with Pending Order Count */}
+<div className="flex flex-row w-full overflow-x-auto pb-4 space-x-4 mt-12">
+    {Object.values(groupedOrders).map((dairy) => {
+        const pendingOrders = dairy.orders.filter(order => order.status === "Pending");
+
+        return (
+            <button
+                key={dairy.dairyName}
+                className={`relative px-6 py-3 mt-10 rounded-lg font-semibold ${
+                    expandedDairy === dairy.dairyName
+                        ? "bg-green-500 text-white"
+                        : "bg-white text-gray-800 hover:bg-gray-100"
+                }`}
+                onClick={() =>
+                    setExpandedDairy(
+                        expandedDairy === dairy.dairyName ? null : dairy.dairyName
+                    )
+                }
+            >
+                {dairy.dairyName}
+
+                {/* ✅ Pending Orders Badge */}
+                {pendingOrders.length > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                        {pendingOrders.length}
+                    </span>
+                )}
+            </button>
+        );
+    })}
+</div>
+
+            
+            {/* Expanded Dairy Orders (Horizontal Layout) */}
+            {expandedDairy && groupedOrders[expandedDairy] && (
+                <div className="w-full bg-white p-6 rounded-lg shadow-lg">
+                    <h2 className="text-xl font-bold text-gray-800 mb-4">{expandedDairy} - Pending Orders</h2>
+                    <div className="flex flex-row overflow-x-auto pb-4 space-x-4">
+                        {groupedOrders[expandedDairy].orders
+                            .filter((order) => order.status === "Pending")
+                            .map((order) => (
+                                <OrderComponent
+                                    key={order._id}
+                                    order={order}
+                                    onAccept={handleOrderAccept}
+                                    onSend={handleSendButtonClick}
+                                    calculateProgress={calculateProgress}
+                                />
+                            ))}
                     </div>
                 </div>
-            ))}
+            )}
 
             <OrderDetailsModal
                 isOpen={isModalOpen}
@@ -150,25 +172,24 @@ const DisplayDairiesWithOrders = () => {
 };
 
 const OrderComponent = ({ order, onAccept, onSend, calculateProgress }) => (
-    <div className="p-4 bg-blue-300 rounded-lg mb-4">
+    <div className="min-w-[280px] p-4 bg-blue-100 rounded-lg border border-blue-300 flex-shrink-0">
         <p className="text-black font-bold">Date: {new Date(order.createdAt).toLocaleDateString()}</p>
         <p className="text-black font-bold">Order Type: {order.orderType}</p>
         <p className="text-black">Quantity: {order.quantity}</p>
         <p className="text-black">Total Amount: {order.rate}</p>
 
         {order.status !== "Completed" && (
-            <>
-                <button
-                    className={`${
-                        order.status === "Accepted"
-                            ? "bg-gray-400 cursor-not-allowed"
-                            : "bg-green-500 hover:bg-green-600"
-                    } text-white font-bold py-2 px-4 rounded mt-2`}
-                    onClick={() => onSend(order._id)}
-                >
-                    Accept Order
-                </button>
-            </>
+            <button
+                className={`${
+                    order.status === "Accepted"
+                        ? "bg-gray-400 cursor-not-allowed"
+                        : "bg-green-500 hover:bg-green-600"
+                } text-white font-bold py-2 px-4 rounded mt-2 w-full`}
+                onClick={() => onSend(order._id)}
+                disabled={order.status === "Accepted"}
+            >
+                {order.status === "Accepted" ? "Order Accepted" : "Accept Order"}
+            </button>
         )}
 
         <div className="relative pt-1 mt-4">

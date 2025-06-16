@@ -5,6 +5,7 @@ import Image from 'next/image';
 import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import useUserStore from '@/app/store/useUserList';
 
 const AddAdvance = () => {
   const { id } = useParams();
@@ -14,22 +15,14 @@ const AddAdvance = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedOptionOrder, setSelectedOptionOrder] = useState('');
   const [rakkam, setRakkam] = useState('');
-  const [users, setUsers] = useState([]);
   const inputRefs = useRef([]);
   const [orderNo, setOrderNo] = useState('');
+     const { users, loading, error, fetchUsers } = useUserStore();
+
 
   useEffect(() => {
-    async function getOwnerUsers() {
-      try {
-        const res = await axios.get('/api/user/getUserList');
-        setUsers(res.data.data); 
-      } catch (error) {
-        console.log("Failed to fetch users:", error.message);
-        toast.error("सर्वर डाउन आहे ");
-      }
-    }
-    getOwnerUsers();
-  }, []);
+    fetchUsers();
+  }, [fetchUsers]);
 
   useEffect(() => {
     const date = new Date();

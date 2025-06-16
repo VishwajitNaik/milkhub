@@ -56,12 +56,6 @@ export default function Navbar() {
       >
         <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
           <div className="relative flex items-center justify-between h-16">
-            {/* Drawer Toggle Button */}
-            <div className="flex items-center">
-              <button onClick={toggleDrawer} className="text-xl font-bold cursor-pointer">
-                <FontAwesomeIcon icon={faBars} size="lg" />
-              </button>
-            </div>
 
             {/* Dropdown Menu */}
             <div className="flex flex-row" ref={dropdownRef}>
@@ -69,7 +63,7 @@ export default function Navbar() {
                 <div key={menu} className="relative -ml-2">
                   <button
                     onClick={() => setActiveMenu(activeMenu === menu ? null : menu)}
-                    className="hover:bg-blue-600 px-4 sm:px-8 py-2 sm:mr-4 rounded-md text-sm font-medium border-b border-gray-300 transition duration-300 ease-in-out transform hover:scale-105"
+                    className="hover:bg-blue-600 px-4 ml-6 sm:px-8 py-2 sm:mr-4 rounded-md text-sm font-medium border-b border-gray-300 transition duration-300 ease-in-out transform hover:scale-105"
                   >
                     {menu}
                   </button>

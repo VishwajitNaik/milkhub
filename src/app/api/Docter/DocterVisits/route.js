@@ -25,3 +25,23 @@ export async function GET(request) {
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }
+
+export async function DELETE(request) {
+    try {
+        const { visitId } = await request.json();
+        if (!visitId) {
+            return NextResponse.json({ error: "Visit ID is required" }, { status: 400 });
+        }
+
+        const deletedVisit = await DocterVisit.findByIdAndDelete(visitId);
+        if (!deletedVisit) {
+            return NextResponse.json({ error: "Visit not found" }, { status: 404 });
+        }
+
+        return NextResponse.json({ message: "Visit deleted successfully" }, { status: 200 });
+
+    } catch (error) {
+        console.error("Error in DELETE /api/Docter/DocterVisits:", error);
+        return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+}

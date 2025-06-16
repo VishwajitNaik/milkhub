@@ -19,6 +19,7 @@ import Link from "next/link.js";
 import Calculator from '@/app/components/Calculator'
 import AddUcchal from "@/app/components/AddUcchal.js";
 import VikriMilk from "../../components/VikriMilk"
+import useUserStore from "@/app/store/useUserList.js"; // Import the user store
 
 
 export default function AvakDudhNond({ params }) {
@@ -48,7 +49,7 @@ export default function AvakDudhNond({ params }) {
   const [totalRakkamCow, setTotalRakkamCow] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [users, setUsers] = useState([]);
+  // const [users, setUsers] = useState([]);
   const [owners, getOwners] = useState([]);
   const [ownerName, setOwnerName] = useState("");
   const [rates, setRates] = useState({});
@@ -70,7 +71,9 @@ export default function AvakDudhNond({ params }) {
   const [defaultSNF, setDefaultSNF] = useState(null);
   const [useDefault, setUseDefault] = useState(false); // State for checkbox
 
-  
+  const { users, fetchUsers } = useUserStore();
+
+
   const fetchDefaultSNF = async () => {
     setLoading(true);
     setError("");
@@ -90,18 +93,18 @@ export default function AvakDudhNond({ params }) {
   }, []);
 
   const renderComponent = () => {
-      switch (activeComponent) {
-          case "AddUserOrder":
-              return <AddUserOrder />;
-          case "Addadvance":
-              return <Addadvance />;
-          case "AddBillKapat":
-              return <AddBillKapat />;
-          case "AddUcchal":
-              return <AddUcchal />;
-          default:
-              return <p className="text-gray-500 text-center mt-4">वरीलपैकी एका बटनवर क्लिक करा.</p>;
-      }
+    switch (activeComponent) {
+      case "AddUserOrder":
+        return <AddUserOrder />;
+      case "Addadvance":
+        return <Addadvance />;
+      case "AddBillKapat":
+        return <AddBillKapat />;
+      case "AddUcchal":
+        return <AddUcchal />;
+      default:
+        return <p className="text-gray-500 text-center mt-4">वरीलपैकी एका बटनवर क्लिक करा.</p>;
+    }
   };
 
 
@@ -114,6 +117,8 @@ export default function AvakDudhNond({ params }) {
         const response = await axios.get("/api/SessionList"); // Updated API route
         if (Array.isArray(response.data.data)) {
           setSUsers(response.data.data); // Ensure response is an array before setting
+          console.log("Users with no milk records:", response.data.data);
+          
         } else {
           console.error("Unexpected response format:", response.data);
           setSUsers([]);
@@ -236,16 +241,8 @@ export default function AvakDudhNond({ params }) {
   }, []);
 
   useEffect(() => {
-    async function getOwnerUsers() {
-      try {
-        const res = await axios.get("/api/user/getUserList");
-        setUsers(res.data.data);
-      } catch (error) {
-        console.log("Failed to fetch users:", error.message);
-      }
-    }
-    getOwnerUsers();
-  }, []);
+    fetchUsers();
+  }, [fetchUsers]);
 
   useEffect(() => {
     const date = new Date();
@@ -386,12 +383,12 @@ export default function AvakDudhNond({ params }) {
     const R = (R1 - R2) / (HF - LF); // Calculate R
     console.log("R", R);
     let FR = 0;
-    if(X < HF){
-       FR = (R1 - (HF - X) * R); // 30.90
+    if (X < HF) {
+      FR = (R1 - (HF - X) * R); // 30.90
     } else {
-       FR = (R1 - (HF - HF) * R); // 30.90
+      FR = (R1 - (HF - HF) * R); // 30.90
     }
-     // Calculate FR
+    // Calculate FR
     return FR; // Return the calculated fat rate
   };
 
@@ -400,19 +397,19 @@ export default function AvakDudhNond({ params }) {
     const R = (R1 - R2) / (HF - LF); // Calculate R
     console.log("R", R);
     let FR = 0;
-    if(X < HF){
-       FR = (R1 - (HF - X) * R); // 30.90
+    if (X < HF) {
+      FR = (R1 - (HF - X) * R); // 30.90
     } else {
-       FR = (R1 - (HF - HF) * R); // 30.90
+      FR = (R1 - (HF - HF) * R); // 30.90
     }
-     // Calculate FR
+    // Calculate FR
     return FR; // Return the calculated fat rate
   };
 
 
 
   const calculateTotalRateCow = (X, Y) => {
- 
+
     const FR = calculateValuesCow(X, cowConstants); // Calculate the fat rate based on selected constants
     let TFR = FR; // Initialize total rate to Fat Rate (FR)
 
@@ -421,12 +418,12 @@ export default function AvakDudhNond({ params }) {
       if (Y >= range.start && Y <= range.end) {
         const SNFRate = 10 * (Y - range.start) * range.rate; // Calculate SNF rate for the range
         TFR += SNFRate; // Add SNF rate to total rate
-        
+
       } else if (Y > range.end) {
         const SNFRate = 10 * (range.end - range.start) * range.rate; // Calculate full SNF rate for the range        
         TFR += SNFRate; // Add SNF rate to total rate
-        console.log("TFR",TFR);
-        
+        console.log("TFR", TFR);
+
       }
     });
 
@@ -434,7 +431,7 @@ export default function AvakDudhNond({ params }) {
   };
 
   const calculateTotalRateBuff = (X, Y) => {
- 
+
     const FR = calculateValuesBuff(X, buffaloConstants); // Calculate the fat rate based on selected constants
     let TFR = FR; // Initialize total rate to Fat Rate (FR)
 
@@ -443,12 +440,12 @@ export default function AvakDudhNond({ params }) {
       if (Y >= range.start && Y <= range.end) {
         const SNFRate = 10 * (Y - range.start) * range.rate; // Calculate SNF rate for the range
         TFR += SNFRate; // Add SNF rate to total rate
-        
+
       } else if (Y > range.end) {
         const SNFRate = 10 * (range.end - range.start) * range.rate; // Calculate full SNF rate for the range        
         TFR += SNFRate; // Add SNF rate to total rate
-        console.log("TFR",TFR);
-        
+        console.log("TFR", TFR);
+
       }
     });
 
@@ -465,8 +462,8 @@ export default function AvakDudhNond({ params }) {
       return;
     }
 
-    console.log("fat",fatInput);
-    
+    console.log("fat", fatInput);
+
 
     let rate = 0; // Default to 0 to avoid undefined errors
 
@@ -478,122 +475,122 @@ export default function AvakDudhNond({ params }) {
       rate = parseFloat(calculateTotalRateBuff(fatInput, snfInput)) || 0;
     }
 
-   
+
 
     const amount = liter * rate;
 
     inputRefs.current[4].value = rate.toFixed(2); // Set calculated rate
     inputRefs.current[5].value = amount.toFixed(2); // Set calculated amount
-};
+  };
 
 
-const clearForm = (shouldClear = true, hasPreviousData = false) => {
-  if (!shouldClear) return; // Prevent clearing if shouldClear is false
+  const clearForm = (shouldClear = true, hasPreviousData = false) => {
+    if (!shouldClear) return; // Prevent clearing if shouldClear is false
 
-  // ✅ Don't clear fields if previous data exists
-  if (!hasPreviousData) {
-    inputRefs.current.forEach((input, index) => {
-      if (input && index >= 1) {
-        input.value = ""; // Clear only the relevant fields
+    // ✅ Don't clear fields if previous data exists
+    if (!hasPreviousData) {
+      inputRefs.current.forEach((input, index) => {
+        if (input && index >= 1) {
+          input.value = ""; // Clear only the relevant fields
+        }
+      });
+
+      setFat(""); // Reset fat input
+      if (useDefault === true) {
+        setSnf(defaultSNF.snf); // Set SNF to default if useDefault is true
+      } else {
+        setSnf(""); // Otherwise, clear SNF input
       }
-    });
-
-    setFat(""); // Reset fat input
-    if (useDefault === true) {
-      setSnf(defaultSNF.snf); // Set SNF to default if useDefault is true
-    } else {
-      setSnf(""); // Otherwise, clear SNF input
     }
-  }
-};
+  };
 
   const handleGetMilkData = async () => {
-  try {
-    if (!selectedMilk || !selectedOption) {
-      alert("Please select a user and milk type before fetching data");
-      return;
-    }
+    try {
+      if (!selectedMilk || !selectedOption) {
+        alert("Please select a user and milk type before fetching data");
+        return;
+      }
 
-    const queryParams = new URLSearchParams({
-      registerNo: selectedOption,
-      session: currentTime,
-      milk: selectedMilk,
-      date: currentDate,
-    }).toString();
+      const queryParams = new URLSearchParams({
+        registerNo: selectedOption,
+        session: currentTime,
+        milk: selectedMilk,
+        date: currentDate,
+      }).toString();
 
-    const redisRes = await axios.get(`/api/milk/GetMilkvalue?${queryParams}`);
-    if (redisRes.data.data) {
-      const milkRecord = redisRes.data.data;
-      Toast.success("दूध डेटा प्राप्त किया गया है");
+      const redisRes = await axios.get(`/api/milk/GetMilkvalue?${queryParams}`);
+      if (redisRes.data.data) {
+        const milkRecord = redisRes.data.data;
+        Toast.success("दूध डेटा प्राप्त किया गया है");
 
-      inputRefs.current[1].value = milkRecord.liter;
-      inputRefs.current[2].value = milkRecord.fat;
-      inputRefs.current[3].value = milkRecord.snf;
-      inputRefs.current[4].value = milkRecord.dar;
-      inputRefs.current[5].value = milkRecord.rakkam;
-    } else {
-      Toast.info("No milk data found, please submit");
-    }
-  } catch (error) {
-    Toast.error("Error fetching milk data:", error.message);
-  }
-};
-
-const handleSubmit = async () => {
-  try {
-    if (!selectedMilk) {
-      alert("Please select a milk type before submitting");
-      return;
-    }
-
-    const liter = parseFloat(inputRefs.current[1]?.value || "0");
-    const fat = parseFloat(inputRefs.current[2]?.value || "0");
-    const snf = parseFloat(inputRefs.current[3]?.value || "0");
-    const dar = parseFloat(inputRefs.current[4]?.value || "0");
-    const rakkam = parseFloat(inputRefs.current[5]?.value || "0");
-
-    if (isNaN(liter) || isNaN(fat) || isNaN(snf) || isNaN(dar) || isNaN(rakkam)) {
-      alert("Please enter valid numbers before submitting");
-      return;
-    }
-
-    const payload = {
-      registerNo: selectedOption,
-      session: currentTime,
-      milk: selectedMilk,
-      liter,
-      fat,
-      snf,
-      dar,
-      rakkam,
-      date: currentDate,
-    };
-
-    const res = await axios.post("/api/milk/createMilk", payload);
-    Toast.success(res.data.message);
-
-    if (res.data.alert) {
-      // ✅ If milk record exists, update input fields and prevent clearing
-      Toast.success(res.data.alert);
-      if (res.data.data) {
-        const milkRecord = res.data.data;
         inputRefs.current[1].value = milkRecord.liter;
         inputRefs.current[2].value = milkRecord.fat;
         inputRefs.current[3].value = milkRecord.snf;
         inputRefs.current[4].value = milkRecord.dar;
         inputRefs.current[5].value = milkRecord.rakkam;
+      } else {
+        Toast.info("No milk data found, please submit");
       }
-    } else {
-      // ✅ Only clear form if no previous record exists
-      setTimeout(() => {
-        clearForm(true, res.data.alert); // Pass hasPreviousData flag
-        input1Ref.current.focus();
-      }, 1000);
+    } catch (error) {
+      Toast.error("Error fetching milk data:", error.message);
     }
-  } catch (error) {
-    Toast.error("Error storing milk information:", error.message);
-  }
-};
+  };
+
+  const handleSubmit = async () => {
+    try {
+      if (!selectedMilk) {
+        alert("Please select a milk type before submitting");
+        return;
+      }
+
+      const liter = parseFloat(inputRefs.current[1]?.value || "0");
+      const fat = parseFloat(inputRefs.current[2]?.value || "0");
+      const snf = parseFloat(inputRefs.current[3]?.value || "0");
+      const dar = parseFloat(inputRefs.current[4]?.value || "0");
+      const rakkam = parseFloat(inputRefs.current[5]?.value || "0");
+
+      if (isNaN(liter) || isNaN(fat) || isNaN(snf) || isNaN(dar) || isNaN(rakkam)) {
+        alert("Please enter valid numbers before submitting");
+        return;
+      }
+
+      const payload = {
+        registerNo: selectedOption,
+        session: currentTime,
+        milk: selectedMilk,
+        liter,
+        fat,
+        snf,
+        dar,
+        rakkam,
+        date: currentDate,
+      };
+
+      const res = await axios.post("/api/milk/createMilk", payload);
+      Toast.success(res.data.message);
+
+      if (res.data.alert) {
+        // ✅ If milk record exists, update input fields and prevent clearing
+        Toast.success(res.data.alert);
+        if (res.data.data) {
+          const milkRecord = res.data.data;
+          inputRefs.current[1].value = milkRecord.liter;
+          inputRefs.current[2].value = milkRecord.fat;
+          inputRefs.current[3].value = milkRecord.snf;
+          inputRefs.current[4].value = milkRecord.dar;
+          inputRefs.current[5].value = milkRecord.rakkam;
+        }
+      } else {
+        // ✅ Only clear form if no previous record exists
+        setTimeout(() => {
+          clearForm(true, res.data.alert); // Pass hasPreviousData flag
+          input1Ref.current.focus();
+        }, 1000);
+      }
+    } catch (error) {
+      Toast.error("Error storing milk information:", error.message);
+    }
+  };
 
   const handleUpdate = async () => {
     try {
@@ -714,9 +711,9 @@ const handleSubmit = async () => {
   return (
     <>
       <div className="banner relative min-h-screen -mb-12">
-      <video autoPlay loop muted className="opacity-50">
-        <source src="/assets/milk.mp4" type="video/mp4" /> 
-      </video>
+        <video autoPlay loop muted className="opacity-50">
+          <source src="/assets/milk.mp4" type="video/mp4" />
+        </video>
         <div className="absolute top-12 left-0 right-0 flex justify-center items-center">
           <div
             className="bg-gray-400 bg-opacity-50 rounded-md flex flex-col"
@@ -735,46 +732,43 @@ const handleSubmit = async () => {
                 />
               </h1>
               <h1 className="text-2xl font-semibold relative z-0 text-gray-800 overflow-hidden">
-              <span className="relative z-10 inline-block text-white bg-clip-text text-transparent animate-slide">
-                {ownerName || "Guest"}
-              </span>
-              <span className="absolute inset-0 text-gray-300 opacity-30 blur-sm animate-slide">
-                {ownerName || "Guest"}
-              </span>
-            </h1>
-            <button
-              className="text-white py-1 px-3 rounded text-sm hover:bg-gray-800 hover:text-white transition duration-300 border-b-2 hover:border-b-2 hover:border-blue-500 border-gray-300"
-              onClick={handlePageRefresh}
-            >
-              <i className="fas fa-sync-alt"></i> {/* Font Awesome Refresh Icon */}
-            </button>
-            <div>
-      {/* Button to open popup */}
-      <button
-        onClick={openPopup}
-        className="w-full md:w-36 ml-12 py-2 hover:bg-blue-600 text-white font-semibold rounded-md shadow-md shadow-black transition-transform duration-300 hover:scale-105"
-      >
-        दूध विक्री
-      </button>
+                <span className="relative z-10 inline-block text-white bg-clip-text text-transparent animate-slide">
+                  {ownerName || "Guest"}
+                </span>
+                <span className="absolute inset-0 text-gray-300 opacity-30 blur-sm animate-slide">
+                  {ownerName || "Guest"}
+                </span>
+              </h1>
+              <button
+                className="text-white py-1 px-3 rounded text-sm hover:bg-gray-800 hover:text-white transition duration-300 border-b-2 hover:border-b-2 hover:border-blue-500 border-gray-300"
+                onClick={handlePageRefresh}
+              >
+                <i className="fas fa-sync-alt"></i> {/* Font Awesome Refresh Icon */}
+              </button>
+              <div>
+                {/* Button to open popup */}
+                <button
+                  onClick={openPopup}
+                  className="w-full md:w-36 ml-12 py-2 hover:bg-blue-600 text-white font-semibold rounded-md shadow-md shadow-black transition-transform duration-300 hover:scale-105"
+                >
+                  दूध विक्री
+                </button>
 
-      {/* Popup Modal */}
-      {isOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white p-6 rounded-md shadow-lg w-full max-w-3xl relative">
-            {/* Close Button */}
-            <button
-              onClick={closePopup}
-              className="absolute top-2 right-2 rounded-md text-gray-500 hover:text-gray-800 bg-red-600 py-1 px-2 hover:bg-red-700"
-            >
-              ✕
-            </button>
-
-            {/* Render VikriMilk Component */}
-            <VikriMilk />
-          </div>
-        </div>
-      )}
-    </div>
+                {/* Popup Modal */}
+                {isOpen && (
+                  <div className="fixed top-0 left-0 right-0 bottom-0 bg-white/10 backdrop-blur-sm flex justify-center items-center z-50">
+                    <div className="bg-white p-6 rounded-md shadow-lg w-full max-w-3xl relative">
+                      <button
+                        onClick={closePopup}
+                        className="absolute top-2 right-2 rounded-md text-gray-500 hover:text-gray-800 bg-red-600 py-1 px-2 hover:bg-red-700"
+                      >
+                        ✕
+                      </button>
+                      <VikriMilk />
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
             <div className="flex flex-row">
               <div
@@ -799,38 +793,38 @@ const handleSubmit = async () => {
                       <option value="evening">संध्याकाळ </option>
                     </select>
                     <div className="ml-4 rounded-lg flex flex-row">
-                    <label className="flex items-center cursor-pointer space-x-2">
-                      <span className="relative">
-                        <input
-                          type="checkbox"
-                          className="sr-only peer"
-                          checked={autoFill}
-                          onChange={handleAutoFillChange}
-                        />
-                        <div className="w-10 h-6 bg-gray-300 rounded-full peer-focus:ring-2 peer-focus:ring-blue-500 peer-checked:bg-blue-800 transition-all"></div>
-                        <div className="w-4 h-4 bg-white rounded-full shadow-md transform peer-checked:translate-x-4 transition-all absolute top-1 left-1"></div>
-                      </span>
-                      <span className="text-white bg-gradient-to-r from-blue-500 via-purple-600 to-pink-500 px-6 py-2 rounded-lg shadow-lg hover:scale-105 transition-transform ease-in-out">
-                        मागील
-                      </span>
-                    </label>
+                      <label className="flex items-center cursor-pointer space-x-2">
+                        <span className="relative">
+                          <input
+                            type="checkbox"
+                            className="sr-only peer"
+                            checked={autoFill}
+                            onChange={handleAutoFillChange}
+                          />
+                          <div className="w-10 h-6 bg-gray-300 rounded-full peer-focus:ring-2 peer-focus:ring-blue-500 peer-checked:bg-blue-800 transition-all"></div>
+                          <div className="w-4 h-4 bg-white rounded-full shadow-md transform peer-checked:translate-x-4 transition-all absolute top-1 left-1"></div>
+                        </span>
+                        <span className="text-white bg-gradient-to-r from-blue-500 via-purple-600 to-pink-500 px-6 py-2 rounded-lg shadow-lg hover:scale-105 transition-transform ease-in-out">
+                          मागील
+                        </span>
+                      </label>
 
-                    {/* "Fix SNF" checkbox */}
-                    <label className="flex ml-4 items-center cursor-pointer space-x-2">
-                      <span className="relative">
-                        <input
-                          type="checkbox"
-                          className="sr-only peer"
-                          checked={useDefault}
-                          onChange={handleCheckboxChange}
-                        />
-                        <div className="w-10 h-6 bg-gray-300 rounded-full peer-focus:ring-2 peer-focus:ring-blue-500 peer-checked:bg-blue-800 transition-all"></div>
-                        <div className="w-4 h-4 bg-white rounded-full shadow-md transform peer-checked:translate-x-4 transition-all absolute top-1 left-1"></div>
-                      </span>
-                      <span className="text-white bg-gradient-to-r from-blue-500 via-purple-600 to-pink-500 px-6 py-2 rounded-lg shadow-lg hover:scale-105 transition-transform ease-in-out">
-                        फिक्स
-                      </span>
-                    </label>
+                      {/* "Fix SNF" checkbox */}
+                      <label className="flex ml-4 items-center cursor-pointer space-x-2">
+                        <span className="relative">
+                          <input
+                            type="checkbox"
+                            className="sr-only peer"
+                            checked={useDefault}
+                            onChange={handleCheckboxChange}
+                          />
+                          <div className="w-10 h-6 bg-gray-300 rounded-full peer-focus:ring-2 peer-focus:ring-blue-500 peer-checked:bg-blue-800 transition-all"></div>
+                          <div className="w-4 h-4 bg-white rounded-full shadow-md transform peer-checked:translate-x-4 transition-all absolute top-1 left-1"></div>
+                        </span>
+                        <span className="text-white bg-gradient-to-r from-blue-500 via-purple-600 to-pink-500 px-6 py-2 rounded-lg shadow-lg hover:scale-105 transition-transform ease-in-out">
+                          फिक्स
+                        </span>
+                      </label>
                     </div>
                   </div>
                   <div className=" w-auto h-12 flex flex-row p-2">
@@ -888,18 +882,18 @@ const handleSubmit = async () => {
                       className="flex flex-row mt-5 ml-12 bg-slate-500 p-4"
                       style={{ height: "80px", width: "600px" }}
                     >
-                    <input
-                      type="text"
-                      className="text-black p-4 text-2xl font-mono mr-4 border-b-2 border-gray-600 focus:border-blue-500 focus:outline-none w-24 bg-gray-200 rounded-md shadow-sm"
-                      placeholder="लिटर"
-                      ref={(ref) => (inputRefs.current[1] = ref)}
-                      onKeyPress={(e) => handleKeyPress(e, 1)}
-                      onInput={(e) => {
-                        // Allow only numbers and a single decimal point
-                        const value = e.target.value;
-                        e.target.value = value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');
-                      }}
-                    />
+                      <input
+                        type="text"
+                        className="text-black p-4 text-2xl font-mono mr-4 border-b-2 border-gray-600 focus:border-blue-500 focus:outline-none w-24 bg-gray-200 rounded-md shadow-sm"
+                        placeholder="लिटर"
+                        ref={(ref) => (inputRefs.current[1] = ref)}
+                        onKeyPress={(e) => handleKeyPress(e, 1)}
+                        onInput={(e) => {
+                          // Allow only numbers and a single decimal point
+                          const value = e.target.value;
+                          e.target.value = value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');
+                        }}
+                      />
                       <input
                         type="text"
                         className="text-black p-4 text-2xl font-mono mr-4 border-b-2 border-gray-600 focus:border-blue-500 focus:outline-none w-24 bg-gray-200 rounded-md shadow-sm"
@@ -951,34 +945,34 @@ const handleSubmit = async () => {
                 className="bg-opacity-50"
                 style={{ height: "450px", width: "300px" }}
               >
-                  <div className="flex flex-col">
+                <div className="flex flex-col">
+                  <button
+                    onClick={calculateRates}
+                    className="w-full md:w-36 py-2 mt-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md shadow-md hover:translate-x-3 shadow-black transition-all duration-300 ease-in-out"
+                  >
+                    दर व रक्कम काढा
+                  </button>
+                  <div className="flex flex-row gap-4 mt-4 justify-center">
                     <button
-                      onClick={calculateRates}
-                      className="w-full md:w-36 py-2 mt-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md shadow-md hover:translate-x-3 shadow-black transition-all duration-300 ease-in-out"
+                      onClick={handleGetMilkData}
+                      className="w-36 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md shadow-md hover:translate-x-3 shadow-black transition-all duration-300 ease-in-out"
                     >
-                      दर व रक्कम काढा
+                      Check
                     </button>
-                    <div className="flex flex-row gap-4 mt-4 justify-center">
-                      <button
-                        onClick={handleGetMilkData}
-                        className="w-36 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md shadow-md hover:translate-x-3 shadow-black transition-all duration-300 ease-in-out"
-                      >
-                        Check
-                      </button>
-                      <button
-                        onClick={handleSubmit}
-                        className="w-36 py-2 mr-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md shadow-md hover:translate-x-3 shadow-black transition-all duration-300 ease-in-out"
-                      >
-                        Save
-                      </button>
-                    </div>
                     <button
-                      onClick={handleUpdate}
-                      className="w-full md:w-36 py-2 mt-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md shadow-md hover:translate-x-3 shadow-black transition-all duration-300 ease-in-out"
+                      onClick={handleSubmit}
+                      className="w-36 py-2 mr-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md shadow-md hover:translate-x-3 shadow-black transition-all duration-300 ease-in-out"
                     >
-                      अपडेट 
+                      Save
                     </button>
                   </div>
+                  <button
+                    onClick={handleUpdate}
+                    className="w-full md:w-36 py-2 mt-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md shadow-md hover:translate-x-3 shadow-black transition-all duration-300 ease-in-out"
+                  >
+                    अपडेट
+                  </button>
+                </div>
 
                 <div
                   className="relative mt-8 flex flex-row space-y-4"
@@ -1119,21 +1113,21 @@ const handleSubmit = async () => {
                     </div>
                   </div>
                   <div>
-                    <div className="flex flex-row space-x-6">
-                    <div className="relative mt-2 flex flex-col space-y-4 ml-36">
-                      <Image
-                        src="/assets/cen.png"
-                        alt="Image"
-                        className="rounded-lg"
-                        width={100}
-                        height={300}
-                        sizes="(max-width: 768px) 100vw, 768px"
-                      />
-                    </div>
+                    <div className="flex flex-row">
+                      <div className="relative mt-2 flex flex-col space-y-4 ml-36">
+                        <Image
+                          src="/assets/cen.png"
+                          alt="Image"
+                          className="rounded-lg"
+                          width={100}
+                          height={300}
+                          sizes="(max-width: 768px) 100vw, 768px"
+                        />
+                      </div>
 
                       <h1 className="text-2xl text-black font-semibold">00</h1>
 
-                      <div className="relative mt-2 flex flex-col space-y-4 ml-36">
+                      <div className="relative mt-2 flex flex-col space-y-4 ml-12">
                         <Image
                           src="/assets/cen.png"
                           alt="Image"
@@ -1152,34 +1146,34 @@ const handleSubmit = async () => {
                     </h1>
                   </div>
                 </div>
-                <div className="flex flex-row items-center gap-12">
+                <div className=" flex flex-row items-center gap-12">
                   <Calculator />
-                  
+
                   {/* Button to open the modal */}
                   <button
-                      onClick={toggleModal}
-                      className="w-full md:w-36 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md shadow-md shadow-black transition-transform duration-300 hover:scale-105"
+                    onClick={toggleModal}
+                    className="w-full md:w-36 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md shadow-md shadow-black transition-transform duration-300 hover:scale-105"
                   >
-                      न आलेले उत्पादक
+                    न आलेले उत्पादक
                   </button>
 
                   {/* Link Button */}
                   <Link href="/home/SessionMilk">
-                      <button
-                          className="w-full md:w-36 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md shadow-md shadow-black transition-transform duration-300 hover:scale-105"
-                          value={currentTime}
-                      >
-                          {currentTime === "morning" ? (
-                              <span>सकाळचे दूध</span>
-                          ) : (
-                              <span>संध्याकाळचे दूध</span>
-                          )}
-                      </button>
+                    <button
+                      className="w-full md:w-36 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md shadow-md shadow-black transition-transform duration-300 hover:scale-105"
+                      value={currentTime}
+                    >
+                      {currentTime === "morning" ? (
+                        <span>सकाळचे दूध</span>
+                      ) : (
+                        <span>संध्याकाळचे दूध</span>
+                      )}
+                    </button>
                   </Link>
 
                   {/* Modal for displaying user table */}
                   {isModalOpen && (
-                    <div className="text-black fixed inset-0 flex items-center justify-center bg-gray-500 bg-opacity-50 z-10 mt-12 rounded-md">
+                    <div className="text-black fixed inset-0 flex items-center justify-center bg-opacity-50 z-10 mt-12 rounded-md top-0 left-0 right-0 bottom-0 bg-white/10 backdrop-blur-sm">
                       <div className="bg-white text-black p-6 rounded-lg shadow-lg w-3/4 md:w-1/2 relative max-h-[600px] overflow-y-auto">
                         <h2 className="text-xl text-black font-semibold mb-4">
                           न आलेले उत्पादक{" "}
@@ -1230,48 +1224,44 @@ const handleSubmit = async () => {
         <ToastContainer />
       </div>
       <div className="min-h-screen bg-gradient-to-r from-blue-200 to-purple-300 p-8 -ml-40 mt-12">
-            <div className="flex justify-center space-x-4 mb-6">
-                <button
-                    onClick={() => setActiveComponent("AddUserOrder")}
-                    className={`py-2 px-4 rounded-lg ${
-                        activeComponent === "AddUserOrder" ? " text-white" : " text-gray-800"
-                    } hover:bg-blue-200 transition`}
-                >
-                <Image  src="/assets/orders.png" alt="Image" width={200} height={400}/>
-                    उत्पादक खरेदी
-                </button>
-                <button
-                    onClick={() => setActiveComponent("Addadvance")}
-                    className={`py-2 px-4 rounded-lg ${
-                        activeComponent === "Addadvance" ? " text-white" : " text-gray-800"
-                    } hover:bg-green-200 transition`}
-                >
-                <Image  src="/assets/advance.png" alt="Image" width={200} height={400}/>
-                    अडवांस जमा
-                </button>
-                <button
-                    onClick={() => setActiveComponent("AddBillKapat")}
-                    className={`py-2 px-4 rounded-lg ${
-                        activeComponent === "AddBillKapat" ? " text-white" : " text-gray-800"
-                    } hover:bg-yellow-200 transition`}
-                >
-                <Image  src="/assets/kharedi_kapat.png" alt="Image" width={200} height={400}/>
-                    खरेदी कपात
-                </button>
-                <button
-                    onClick={() => setActiveComponent("AddUcchal")}
-                    className={`py-2 px-4 rounded-lg ${
-                        activeComponent === "AddUcchal" ? " text-white" : " text-gray-800"
-                    } hover:bg-red-200 transition`}
-                >
-                <Image  src="/assets/ucchal.png" alt="Image" width={200} height={400}/>
-                    उच्चल
-                </button>
-            </div>
-            <div className="bg-white p-6 rounded-lg shadow-md">
-                {renderComponent()}
-            </div>
+        <div className="flex justify-center space-x-4 mb-6">
+          <button
+            onClick={() => setActiveComponent("AddUserOrder")}
+            className={`py-2 px-4 rounded-lg ${activeComponent === "AddUserOrder" ? " text-white" : " text-gray-800"
+              } hover:bg-blue-200 transition`}
+          >
+            <Image src="/assets/orders.png" alt="Image" width={200} height={400} />
+            उत्पादक खरेदी
+          </button>
+          <button
+            onClick={() => setActiveComponent("Addadvance")}
+            className={`py-2 px-4 rounded-lg ${activeComponent === "Addadvance" ? " text-white" : " text-gray-800"
+              } hover:bg-green-200 transition`}
+          >
+            <Image src="/assets/advance.png" alt="Image" width={200} height={400} />
+            अडवांस जमा
+          </button>
+          <button
+            onClick={() => setActiveComponent("AddBillKapat")}
+            className={`py-2 px-4 rounded-lg ${activeComponent === "AddBillKapat" ? " text-white" : " text-gray-800"
+              } hover:bg-yellow-200 transition`}
+          >
+            <Image src="/assets/kharedi_kapat.png" alt="Image" width={200} height={400} />
+            खरेदी कपात
+          </button>
+          <button
+            onClick={() => setActiveComponent("AddUcchal")}
+            className={`py-2 px-4 rounded-lg ${activeComponent === "AddUcchal" ? " text-white" : " text-gray-800"
+              } hover:bg-red-200 transition`}
+          >
+            <Image src="/assets/ucchal.png" alt="Image" width={200} height={400} />
+            उच्चल
+          </button>
         </div>
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          {renderComponent()}
+        </div>
+      </div>
     </>
   );
 }

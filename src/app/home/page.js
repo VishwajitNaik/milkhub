@@ -11,6 +11,7 @@ import { faBars } from '@fortawesome/free-solid-svg-icons';
 import Image from 'next/image';
 import AvakDudhNond from './AvakDudhachiNondani/page';
 import AddUserMilk from "../components/AddUserMilk";
+import VikriMilk from '../components/VikriMilk';
 import AddUserOrder from '@/app/components/MObileView/AddUserOrder.js';
 import AddUserAdvance from '@/app/components/MObileView/AddUserAdvance';
 import BillKapat from "../components/MObileView/BillKapat.js"
@@ -56,7 +57,7 @@ export default function Navbar() {
       { href: "/home/GetAllUcchal", label: "सर्व उत्पादक उच्चल पाहणे" },
       { href: "/home/UchhalKapat", label: "सर्व उत्पादक उच्चल कपात पाहणे" },
       { href: "/home/orders/getOwnerOrders", label: "संघ ऑर्डर पाहणे " },
-      
+
       { href: "/home/DateWiseAllOrders", label: "सर्व उत्पादक ऑर्डर पाहणे" },
       { href: "/home/AdvanceSabhasad_List", label: "सभासद अडवांस पाहणे " },
       { href: "/home/BillKapatSabhasad_List", label: "बिल कपात पाहणे " },
@@ -65,7 +66,7 @@ export default function Navbar() {
 
     ],
     इतर: [
-      {href: "/home/Ucchal_sabhsad", label: "उच्चल सभासद बाकी पाहणे"},
+      { href: "/home/Ucchal_sabhsad", label: "उच्चल सभासद बाकी पाहणे" },
       { href: "/home/AllUserOrders", label: "सर्व उत्पादक बाकी पाहणे" },
       { href: "/home/milkRecords/OnwerBills", label: "संघ बिल पाहणे" },
       { href: "/home/Docter/DocterVisits", label: " डॉक्टर व्हिजिट पाहणे " },
@@ -77,31 +78,39 @@ export default function Navbar() {
   };
 
   const mobileComponents = [
-    { 
-      component: 'AddUserOrder', 
+        {
+      component: 'VikriMilk',
+      label: 'vikriMilk',
+      icon: '/assets/vikrimilk.png' // Path to ucchal icon
+    },
+    {
+      component: 'AddUserOrder',
       label: 'ऑर्डर भरणे',
       icon: '/assets/orders.png' // Path to order icon
     },
-    { 
-      component: 'AddUserAdvance', 
+    {
+      component: 'AddUserAdvance',
       label: 'अडवांस भरणे',
       icon: '/assets/advance.png' // Path to advance icon
     },
-    { 
-      component: 'BillKapat', 
+    {
+      component: 'BillKapat',
       label: 'बिल कपात',
       icon: '/assets/kharedi_kapat.png' // Path to bill kapat icon
     },
-    { 
-      component: 'AddUcchal', 
+    {
+      component: 'AddUcchal',
       label: 'उच्चल भरणे',
       icon: '/assets/ucchal.png' // Path to ucchal icon
     }
+
   ];
 
 
   const renderActiveComponent = () => {
-    switch(activeComponent) {
+    switch (activeComponent) {
+      case 'VikriMilk':
+        return <VikriMilk />;
       case 'AddUserOrder':
         return <AddUserOrder />;
       case 'AddUserAdvance':
@@ -138,8 +147,8 @@ export default function Navbar() {
           <div className="relative flex items-center justify-between h-16">
             {/* Drawer Toggle Button */}
             <div className="flex items-center">
-              <button 
-                onClick={toggleDrawer} 
+              <button
+                onClick={toggleDrawer}
                 className="text-xl font-bold cursor-pointer hover:bg-gray-700 p-2 rounded-full transition duration-300"
               >
                 <FontAwesomeIcon icon={faBars} size="lg" />
@@ -175,8 +184,8 @@ export default function Navbar() {
 
             {/* Right Side (Avatar and Logout) */}
             <div className="flex items-center space-x-8">
-              <button 
-                onClick={logout} 
+              <button
+                onClick={logout}
                 className="text-gray-300 hover:text-white transition duration-300 ease-in-out transform hover:scale-110"
               >
                 <FontAwesomeIcon icon={faSignOutAlt} size="lg" />
@@ -210,7 +219,7 @@ export default function Navbar() {
         >
           <source src="/assets/milk.mp4" type="video/mp4" />
         </video>
-        
+
         {/* Always show AddUserMilk at the top */}
         <div className="p-4">
           <AddUserMilk />
@@ -225,14 +234,14 @@ export default function Navbar() {
               className={`px-4 py-2 mt-4 rounded-lg text-white`}
             >
               <div className='flex flex-col'>
-              <Image
-                src={item.icon}
-                alt={item.label}
-                width={100}
-                height={100}
-                className="inline-block mr-2"
-              />
-              {item.label}
+                <Image
+                  src={item.icon}
+                  alt={item.label}
+                  width={100}
+                  height={100}
+                  className="inline-block mr-2"
+                />
+                {item.label}
               </div>
             </button>
           ))}

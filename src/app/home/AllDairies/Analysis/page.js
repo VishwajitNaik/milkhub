@@ -35,7 +35,7 @@ export default function SanghAnalysis() {
     }, [filter]);
 
     return (
-        <div className="p-6">
+        <div className="p-6 bg-gray-500 rounded-lg shadow-md">
             <h1 className="text-xl font-bold mb-4">Milk Collection Analysis</h1>
 
             {/* Filter Selection */}

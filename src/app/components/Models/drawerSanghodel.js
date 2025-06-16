@@ -94,6 +94,7 @@ const Drawer = ({ isOpen, onClose }) => {
 
         {/* Menu Items */}
         {[
+          { href: "/Docter/Signup", label: "डॉक्टर Signup" },
           { href: "/home/AllDairies/sabhasad_List", label: "सभासद लिस्ट" },
           { href: "/home/AllDairies/MakeMilk", label: "दूध भरणे" },
           { href: "/home/AllDairies/Rates/AddRates", label: "दरपत्रक भरणे" },

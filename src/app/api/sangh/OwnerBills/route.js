@@ -3,6 +3,7 @@ import OwnerMilk from "@/models/MakeMilk";
 import OnwerKapat from "@/models/OwnerKapat";
 import OwnerKapatOption from "@/models/AddKapatOption";
 import Sangh from "@/models/SanghModel";
+import DocterVisit from "@/models/GetDocterVisit";
 import { NextResponse } from "next/server";
 import ExtraRate from '@/models/ExtraRateModel'; // Adjust the path if necessary
 import { getDataFromToken } from "@/helpers/getSanghFormToken";
@@ -107,13 +108,13 @@ export async function POST(request) {
         0
       );
       console.log("Buff Extra Rate:", BuffExtraRate.toFixed(2));
-      
+
       const CowExtraRate = extraRates.reduce(
         (total, record) => total + Number(record.CowRate || 0),
         0
       );
       console.log("Cow Extra Rate:", CowExtraRate.toFixed(2));
-      
+
       // Calculate total extra rate
       const totalExtraRate = (
         BuffExtraRate + CowExtraRate * totalLiters
@@ -121,10 +122,10 @@ export async function POST(request) {
 
 
       const totalBuffExtraRate = (BuffExtraRate * buffTotalLiters).toFixed(2);
-    
+
       const totalCowExtraRate = (CowExtraRate * cowTotalLiters).toFixed(2);
- 
-      
+
+
 
       // Calculate total Kapat rate multiplied by total liters
       const totalKapatRateMultiplybyTotalLiter =
@@ -139,7 +140,17 @@ export async function POST(request) {
         date: { $gte: startDateObj, $lte: endDateObj },
       });
 
-   
+
+      const visits = await DocterVisit.find({
+        createdBy: owner._id,
+        status: "completed",
+        date: { $gte: startDateObj, $lte: endDateObj },
+      })
+
+      // Calculate total earnings from visits
+      const totalEarningsFromVisits = visits.reduce((total, visit) => {
+        return total + (visit.visitRate || 0);
+      }, 0);
 
       // Calculate total Kapat for the owner
       const totalKapat = ownerKapat.reduce(
@@ -147,16 +158,16 @@ export async function POST(request) {
         0
       );
 
-         const totalBillKapat = totalKapat + totalKapatRateMultiplybyTotalLiter;
-      
+      const totalBillKapat = totalKapat + totalKapatRateMultiplybyTotalLiter;
+
 
       // Calculate net payment after subtracting Kapat rate
       const netPayment = Math.floor(
-        totalRakkam - totalKapatRateMultiplybyTotalLiter - totalKapat
+        totalRakkam - totalKapatRateMultiplybyTotalLiter - totalKapat - totalEarningsFromVisits
       );
 
 
-      
+
 
 
       // Push the result to the final results array
@@ -172,6 +183,7 @@ export async function POST(request) {
         totalCowExtraRate,
         totalRakkam,
         totalBillKapat,
+        totalEarningsFromVisits,
         totalKapatRateMultiplybyTotalLiter,
         formatedResult,
         totalExtraRate,

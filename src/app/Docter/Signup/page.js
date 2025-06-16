@@ -12,6 +12,7 @@ const DrSignUp = () => {
         phone: "",
         address: "",
         specialization: "",
+        center: "", // Assuming 'center' is a field you want to include
         sangh: "", 
         password: "",
     });
@@ -24,9 +25,20 @@ const DrSignUp = () => {
         setLoading(true);
         try {
             const res = await axios.post("/api/Docter/Signup", docter);
+
+            const clearFields = {
+                name: "",
+                phone: "",
+                address: "",
+                specialization: "",
+                center: "",
+                sangh: "",
+                password: "",
+            };
+            setDocter(clearFields);
+
             Toast.success("Signup successful! Redirecting...");
             console.log("SignUp Success", res.data);
-            router.push("/home/Docter/Signin");
         } catch (error) {
             console.error("SignUp Error", error);
             Toast.error(error.response?.data?.message || "Sign up failed. Please try again.");
@@ -66,7 +78,7 @@ const DrSignUp = () => {
     };
 
     return (
-        <div className="gradient-bg">
+        <div className="gradient-bg pt-10">
         <div className="max-w-lg h-[80vh] mx-auto p-6 bg-white/80 backdrop-blur-md rounded-lg shadow-md overflow-x-auto overflow-y-auto">
             <style jsx>{`
                 .max-w-lg::-webkit-scrollbar {
@@ -81,11 +93,11 @@ const DrSignUp = () => {
                 }
             `}</style>
             
-            <ToastContainer position="top-center" autoClose={3000} />
+            
             
             <h2 className='text-black text-2xl font-bold text-center mb-6'>Doctor Sign Up</h2>
             
-            <form onSubmit={onSignup} className="space-y-4">
+            <form onSubmit={onSignup} className="space-y-4 text-black">
                 <div className="grid grid-cols-1 gap-4">
                     {/* Name Field */}
                     <div>
@@ -147,6 +159,22 @@ const DrSignUp = () => {
                             id="specialization"
                             name="specialization"
                             value={docter.specialization}
+                            onChange={handleChange}
+                            className="w-full text-black px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            required
+                        />
+                    </div>
+
+                    {/* Center Field */}
+                    <div>
+                        <label htmlFor="center" className="block text-sm font-medium text-gray-700 mb-1">
+                            Center
+                        </label>
+                        <input
+                            type="text"
+                            id="center"
+                            name="center"
+                            value={docter.center}
                             onChange={handleChange}
                             className="w-full text-black px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                             required
@@ -226,6 +254,7 @@ const DrSignUp = () => {
                 </p>
             </div>
         </div>
+        <ToastContainer position="top-center" autoClose={3000} />
         </div>
     );
 }

@@ -20,7 +20,7 @@ export default function Navbar() {
 
   const logout = async () => {
     try {
-      await axios.get('/api/owner/logout');
+      await axios.get('/api/sangh/logout');
       router.push('/');
     } catch (error) {
       console.log('Logout failed: ', error.message);

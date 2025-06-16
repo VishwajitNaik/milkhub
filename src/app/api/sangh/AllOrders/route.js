@@ -8,33 +8,101 @@ connect();
 
 export async function GET(request) {
     try {
-        // Get owner ID from token
+        // Get sangh ID from token
         const sanghId = await getDataFromToken(request);
 
-        // Find the owner using the `sangh` ID
-        const owner = await Owner.findOne({ sangh: sanghId });
-        if (!owner) {
-            return NextResponse.json({ error: "Owner not found" }, { status: 404 });
+        // Find all owners associated with this sangh
+        const owners = await Owner.find({ sangh: sanghId }).select('_id dairyName');
+        
+        if (!owners || owners.length === 0) {
+            return NextResponse.json({ error: "No owners found for this sangh" }, { status: 404 });
         }
 
-        // Fetch orders and populate `createdBy` to get `dairyName`
-        const orders = await Orders.find({ createdBy: owner._id })
-            .populate({ path: "createdBy", select: "dairyName" });
+        // Extract owner IDs
+        const ownerIds = owners.map(owner => owner._id);
 
-        if (!orders || orders.length === 0) {
-            return NextResponse.json({ message: "No orders found." }, { status: 404 });
-        }
+        // Fetch orders for all these owners and populate dairyName
+        const orders = await Orders.find({ createdBy: { $in: ownerIds } })
+            .populate({ 
+                path: "createdBy", 
+                select: "dairyName",
+                model: Owner
+            })
+            .sort({ createdAt: -1 });
 
-        // Map orders to ensure `dairyName` is included
-        const ordersWithDairyName = orders.map(order => ({
-            ...order._doc,
-            dairyName: order.createdBy ? order.createdBy.dairyName : "Unknown Dairy",
+        // Get pending order counts per owner
+        const pendingOrderCounts = await Orders.aggregate([
+            {
+                $match: {
+                    createdBy: { $in: ownerIds },
+                    status: "Pending"
+                }
+            },
+            {
+                $group: {
+                    _id: "$createdBy",
+                    pendingCount: { $sum: 1 }
+                }
+            }
+        ]);
+
+        // Create a map of ownerId to pending count
+        const pendingCountMap = pendingOrderCounts.reduce((acc, item) => {
+            acc[item._id.toString()] = item.pendingCount;
+            return acc;
+        }, {});
+
+        // Create a map of ownerId to dairyName
+        const ownerMap = owners.reduce((acc, owner) => {
+            acc[owner._id.toString()] = {
+                dairyName: owner.dairyName,
+                pendingCount: pendingCountMap[owner._id.toString()] || 0
+            };
+            return acc;
+        }, {});
+
+        // Map orders with dairyName and include pending count
+        const ordersWithDairyInfo = orders.map(order => {
+            const ownerId = order.createdBy?._id?.toString() || order.createdBy?.toString();
+            const ownerInfo = ownerMap[ownerId] || { 
+                dairyName: "Unknown Dairy", 
+                pendingCount: 0 
+            };
+
+            return {
+                ...order._doc,
+                dairyName: ownerInfo.dairyName,
+                ownerId: order.createdBy,
+                pendingOrdersCount: ownerInfo.pendingCount
+            };
+        });
+
+        // Prepare owner statistics
+        const ownerStatistics = owners.map(owner => ({
+            _id: owner._id,
+            dairyName: owner.dairyName,
+            pendingOrdersCount: pendingCountMap[owner._id.toString()] || 0,
+            totalOrders: orders.filter(o => 
+                o.createdBy?._id?.toString() === owner._id.toString() || 
+                o.createdBy?.toString() === owner._id.toString()
+            ).length
         }));
 
+        return NextResponse.json({ 
+            data: {
+                orders: ordersWithDairyInfo,
+                ownerStatistics, // This gives you counts per dairy
+                ownerCount: owners.length,
+                orderCount: orders.length,
+                totalPendingOrders: pendingOrderCounts.reduce((sum, item) => sum + item.pendingCount, 0)
+            },
+        }, { status: 200 });
 
-        return NextResponse.json({ data: ordersWithDairyName }, { status: 200 });
     } catch (error) {
-        console.error("Error fetching orders:", error.message);
-        return NextResponse.json({ error: "Error fetching orders", details: error.message }, { status: 500 });
+        console.error("Error in orders API:", error.message);
+        return NextResponse.json({ 
+            error: "Error fetching orders", 
+            details: error.message 
+        }, { status: 500 });
     }
 }

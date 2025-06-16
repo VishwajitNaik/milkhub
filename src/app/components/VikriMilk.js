@@ -209,103 +209,207 @@ const VikriMilk = () => {
 
   return (
 
-      <div className="bg-gray-100 p-6 rounded-xl shadow-xl w-full max-w-3xl">
-        {/* Date and Time */}
-        <div className="flex gap-4 mb-6">
-          <input
-            type="date"
-            className="text-black p-4 border-b-2 border-gray-600 focus:border-blue-500 focus:outline-none w-1/4 bg-gray-200 rounded-md"
-            value={currentDate}
-            onChange={(e) => setCurrentDate(e.target.value)}
-            max={new Date().toISOString().split("T")[0]} // Restrict future dates
-          />
-          <select
-            value={currentTime}
-            onChange={(e) => setCurrentTime(e.target.value)}
-            className="text-black p-4 border-b-2 border-gray-600 focus:border-blue-500 focus:outline-none w-1/4 bg-gray-200 rounded-md"
-          >
-            <option value="morning">सकाळ</option>
-            <option value="evening">संध्याकाळ</option>
-          </select>
-        </div>
+<>
+{/* MOBILE VIEW (Below 640px) */}
+<div className="block sm:hidden bg-gray-300 p-3 rounded-xl shadow-xl w-full max-w-xl mx-auto space-y-3 text-sm">
 
-        {/* User and Milk Type */}
-        <div className="flex gap-4 mb-6">
-          <input
-            type="text"
-            ref={(el) => (inputRefs.current[0] = el)}
-            placeholder="रजि. नं."
-            value={selectedOption}
-            onChange={(e) => setSelectedOption(e.target.value)}
-            onBlur={handleRegisterNoBlur}
-            onKeyDown={(e) => handleKeyPress(e, 1)}
-            className="text-black h-12 text-2xl font-mono p-4 mr-4 border-b-2 border-gray-600 focus:border-blue-500 focus:outline-none w-20 bg-gray-200 rounded-md"
-          />
-          <select
-            value={selectedOption}
-            onChange={handleUserChange} // Add this
-            className="text-black h-12 mr-4 border-b-2 border-gray-600 focus:border-blue-500 focus:outline-none w-1/2 bg-gray-200 rounded-md shadow-sm"
-          >
-            <option value="">उत्पादकाचे नाव</option>
-            {vikriUsers.map((user) => (
-              <option key={user.registerNo} value={user.registerNo}>
-                {user.name}
-              </option>
-            ))}
-          </select>
-          <select
-              value={selectedMilk}
-              onChange={handleMilkChange}
-              className="h-12 text-black mr-4 border-b-2 border-gray-600 focus:border-blue-500 focus:outline-none w-20 bg-gray-200 rounded-md shadow-sm"
-            >
-              <option value="">दूध प्रकार</option>
-              {[...new Set(vikriUsers.map((user) => user.milk))].map(
-                (milkType) => (
-                  <option key={milkType} value={milkType}>
-                    {milkType}
-                  </option>
-                )
-              )}
-            </select>
+  {/* Row 1: Date & Session */}
+  <div className="flex gap-2">
+    <input
+      type="date"
+      value={currentDate}
+      onChange={(e) => setCurrentDate(e.target.value)}
+      max={new Date().toISOString().split("T")[0]}
+      className="w-1/2 p-2 rounded bg-gray-200 text-black"
+    />
+    <select
+      value={currentTime}
+      onChange={(e) => setCurrentTime(e.target.value)}
+      className="w-1/2 p-2 rounded bg-gray-200 text-black"
+    >
+      <option value="morning">सकाळ</option>
+      <option value="evening">संध्याकाळ</option>
+    </select>
+  </div>
 
-        </div>
+  {/* Row 2: Register No, User, MilkType */}
+  <div className="flex items-center gap-2 mt-3 flex-nowrap overflow-x-auto rounded-md pl-2">
+    <input
+      type="text"
+      placeholder="रजि. नं."
+      value={selectedOption}
+      onChange={(e) => setSelectedOption(e.target.value)}
+      onBlur={handleRegisterNoBlur}
+      onKeyDown={(e) => handleKeyPress(e, 1)}
+      className="border rounded-md p-1 text-gray-700 text-sm w-1/5"
+    />
+    <select
+      value={selectedOption}
+      onChange={handleUserChange}
+      className="border rounded-md p-1 text-gray-700 text-sm w-1/2"
+    >
+      <option value="">उत्पादकाचे नाव</option>
+      {vikriUsers.map((user) => (
+        <option key={user.registerNo} value={user.registerNo}>
+          {user.name}
+        </option>
+      ))}
+    </select>
+    <select
+      value={selectedMilk}
+      onChange={handleMilkChange}
+      className="p-2 rounded bg-gray-200 text-black"
+    >
+      <option value="">दूध प्रकार</option>
+      {[...new Set(vikriUsers.map((user) => user.milk))].map((milkType) => (
+        <option key={milkType} value={milkType}>
+          {milkType}
+        </option>
+      ))}
+    </select>
+  </div>
 
-        {/* Inputs */}
-        <div className="flex gap-4 mb-6">
-          <input
-            ref={(el) => (inputRefs.current[1] = el)}
-            type="text"
-            placeholder="लिटर"
-            onKeyDown={(e) => handleKeyPress(e, 1)}
-            className="text-black h-12 text-2xl font-mono p-4 mr-4 border-b-2 border-gray-600 focus:border-blue-500 focus:outline-none w-24 bg-gray-200 rounded-md"
-          />
-          <input
-            ref={(el) => (inputRefs.current[2] = el)}
-            type="text"
-            placeholder="दर"
-            onKeyDown={(e) => handleKeyPress(e, 2)}
-            className="text-black h-12 text-2xl font-mono p-4 mr-4 border-b-2 border-gray-600 focus:border-blue-500 focus:outline-none w-24 bg-gray-200 rounded-md"
-            readOnly
-          />
-          <input
-            ref={(el) => (inputRefs.current[3] = el)}
-            type="text"
-            placeholder="रक्कम"
-            className="text-black h-12 text-2xl font-mono p-4 mr-4 border-b-2 border-gray-600 focus:border-blue-500 focus:outline-none w-24 bg-gray-200 rounded-md"
-            readOnly
-          />
-          <button onClick={calculateRates} className="bg-blue-500 text-white p-2 rounded-md w-1/3">
-            दर व रक्कम काढा
-          </button>
-          <button
-            ref={(el) => (inputRefs.current[4] = el)}
-            onClick={handleSubmit}
-            className="bg-green-500 text-white p-2 rounded-md w-1/3"
-          >
-            सेव करा
-          </button>
-        </div>
-      </div>
+  {/* Row 3: Liter, Dar, Rakkam */}
+  <div className="flex items-center gap-2 mt-3 flex-nowrap overflow-x-auto">
+    <input
+      type="text"
+      placeholder="लिटर"
+      ref={(el) => (inputRefs.current[1] = el)}
+      onKeyDown={(e) => handleKeyPress(e, 1)}
+      className="border rounded-md p-1 text-gray-700 text-sm w-1/4"
+    />
+    <input
+      type="text"
+      placeholder="दर"
+      ref={(el) => (inputRefs.current[2] = el)}
+      readOnly
+      className="border rounded-md p-1 text-gray-700 text-sm w-1/4"
+    />
+    <input
+      type="text"
+      placeholder="रक्कम"
+      ref={(el) => (inputRefs.current[3] = el)}
+      readOnly
+      className="border rounded-md p-1 text-gray-700 text-sm w-1/4"
+    />
+  </div>
+
+  {/* Row 4: Buttons */}
+  <div className="flex flex-col gap-2">
+    <button
+      onClick={calculateRates}
+      className="bg-blue-500 text-white py-2 rounded"
+    >
+      दर व रक्कम काढा
+    </button>
+    <button
+      onClick={handleSubmit}
+      ref={(el) => (inputRefs.current[4] = el)}
+      className="bg-green-500 text-white py-2 rounded"
+    >
+      सेव करा
+    </button>
+  </div>
+</div>
+{/* DESKTOP VIEW (640px and above) */}
+<div className="hidden sm:block bg-gray-300 p-6 rounded-xl shadow-xl w-full max-w-4xl mx-auto">
+
+  {/* Row 1: Date & Session */}
+  <div className="flex gap-4 mb-4">
+    <input
+      type="date"
+      value={currentDate}
+      onChange={(e) => setCurrentDate(e.target.value)}
+      max={new Date().toISOString().split("T")[0]}
+      className="w-1/4 p-3 rounded bg-gray-200 text-black"
+    />
+    <select
+      value={currentTime}
+      onChange={(e) => setCurrentTime(e.target.value)}
+      className="w-1/4 p-3 rounded bg-gray-200 text-black"
+    >
+      <option value="morning">सकाळ</option>
+      <option value="evening">संध्याकाळ</option>
+    </select>
+  </div>
+
+  {/* Row 2: Register No, User, MilkType */}
+  <div className="flex gap-4 mb-4">
+    <input
+      type="text"
+      placeholder="रजि. नं."
+      value={selectedOption}
+      onChange={(e) => setSelectedOption(e.target.value)}
+      onBlur={handleRegisterNoBlur}
+      onKeyDown={(e) => handleKeyPress(e, 1)}
+      className="w-[100px] p-3 rounded bg-gray-200 text-black"
+    />
+    <select
+      value={selectedOption}
+      onChange={handleUserChange}
+      className="w-1/2 p-3 rounded bg-gray-200 text-black"
+    >
+      <option value="">उत्पादकाचे नाव</option>
+      {vikriUsers.map((user) => (
+        <option key={user.registerNo} value={user.registerNo}>
+          {user.name}
+        </option>
+      ))}
+    </select>
+    <select
+      value={selectedMilk}
+      onChange={handleMilkChange}
+      className="w-1/4 p-3 rounded bg-gray-200 text-black"
+    >
+      <option value="">दूध प्रकार</option>
+      {[...new Set(vikriUsers.map((user) => user.milk))].map((milkType) => (
+        <option key={milkType} value={milkType}>
+          {milkType}
+        </option>
+      ))}
+    </select>
+  </div>
+
+  {/* Row 3: Liter, Dar, Rakkam */}
+  <div className="flex gap-4 mb-4">
+    <input
+      type="text"
+      placeholder="लिटर"
+      ref={(el) => (inputRefs.current[1] = el)}
+      onKeyDown={(e) => handleKeyPress(e, 1)}
+      className="w-[90px] p-3 rounded bg-gray-200 text-black"
+    />
+    <input
+      type="text"
+      placeholder="दर"
+      ref={(el) => (inputRefs.current[2] = el)}
+      readOnly
+      className="w-[90px] p-3 rounded bg-gray-200 text-black"
+    />
+    <input
+      type="text"
+      placeholder="रक्कम"
+      ref={(el) => (inputRefs.current[3] = el)}
+      readOnly
+      className="w-[90px] p-3 rounded bg-gray-200 text-black"
+    />
+        <button
+      onClick={calculateRates}
+      className="bg-blue-500 text-white py-2 px-4 rounded w-1/2"
+    >
+      दर व रक्कम काढा
+    </button>
+    <button
+      onClick={handleSubmit}
+      ref={(el) => (inputRefs.current[4] = el)}
+      className="bg-green-500 text-white py-2 px-4 rounded w-1/2"
+    >
+      सेव करा
+    </button>
+  </div>
+</div>
+
+</>
   );
 };
 

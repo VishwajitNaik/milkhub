@@ -6,7 +6,7 @@ export default function CalculatorPopup() {
     const [isOpen, setIsOpen] = useState(false);
 
     return (
-        <div className="flex flex-col items-center" style={{ marginLeft: "-150px" }}>
+        <div className="flex flex-col items-center " style={{ marginLeft: "-150px" }}>
             {/* Button to open popup */}
             <button
                 onClick={() => setIsOpen(true)}
@@ -17,7 +17,7 @@ export default function CalculatorPopup() {
 
             {/* Calculator Popup */}
             {isOpen && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                <div className="fixed inset-0 flex items-center justify-center  bg-opacity-50 top-0 left-0 right-0 bottom-0 bg-white/10 backdrop-blur-sm z-50">
                     <div className="bg-white p-6 rounded-lg shadow-lg w-96">
                         <Calculator onClose={() => setIsOpen(false)} />
                     </div>

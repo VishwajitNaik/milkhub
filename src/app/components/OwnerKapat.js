@@ -27,6 +27,7 @@ const OwnerKapat = ({ ownerId }) => {
     const [acceptedOrdersTotal, setAcceptedOrdersTotal] = useState(0);
     const [billKapatData, setBillKapatData] = useState([]);
     const [billKapatTotal, setBillKapatTotal] = useState(0);
+    const [latestKapatData, setLatestKapatData] = useState([]);
 
     // Fetch owners on component mount
     useEffect(() => {
@@ -216,6 +217,38 @@ const OwnerKapat = ({ ownerId }) => {
     }, [selectedUser, startDate, endDate]); // Re-run effect when dependencies change
 
 
+    useEffect(() => {
+  async function getPreviousBillKapat() {
+    if (selectedUser) {
+      try {
+        const params = new URLSearchParams({
+          ownerId: selectedUser._id,
+        });
+
+        const res = await axios.get(`/api/sangh/GetBillKapat?${params.toString()}`);
+        const fetchedData = res.data.data || [];
+
+        // Sort by the `date` field descending (latest first)
+        const sortedData = fetchedData.sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        const latestKapat = sortedData[0]; // Most recent entry
+
+        if (latestKapat) {
+          setLatestKapatData([latestKapat]); // Set only the latest one
+        } else {
+          setLatestKapatData([]);
+        }
+
+      } catch (error) {
+        console.error("Failed to fetch Bill Kapat data:", error.message);
+      }
+    }
+  }
+
+  getPreviousBillKapat();
+}, [selectedUser, startDate, endDate]);
+
+
     const netpendingTotal = acceptedOrdersTotal - billKapatTotal;
 
     const handleDateChange = (e) => {
@@ -323,9 +356,9 @@ const OwnerKapat = ({ ownerId }) => {
                         </span>
                     </div>
                     <div className="flex items-center space-x-2">
-                        <span className="font-bold">BillKa:</span>
+                        <span className="font-bold">BillKapat:</span>
                         <span className="px-2 py-1 bg-gray-800 border border-gray-400 rounded-md text-lg">
-                            {billKapatTotal}
+                            {latestKapatData.length > 0 ? latestKapatData[0].rate.toFixed(2) : "0.00"}
                         </span>
                     </div>
                     <div className="flex items-center space-x-2">
